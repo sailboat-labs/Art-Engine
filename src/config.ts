@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("path");
-const isLocal = typeof process.pkg === "undefined";
+const isLocal = true;
 const basePath = isLocal ? process.cwd() : path.dirname(process.execPath);
 const { MODE } = require(path.join(basePath, "src/blendMode.js"));
 
@@ -37,7 +37,7 @@ const background = {
 
 const layerConfigurations = [
   {
-    growEditionSizeTo: 64,
+    growEditionSizeTo: 4,
     namePrefix: "NZMX Club", // Use to add a name to Metadata `name:`
     layersOrder: [
       { name: "Background" },

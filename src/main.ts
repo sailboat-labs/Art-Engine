@@ -2,19 +2,44 @@
 /* eslint-disable no-useless-escape */
 "use strict";
 
-const path = require("path");
-const isLocal = typeof process.pkg === "undefined";
-const basePath = isLocal ? process.cwd() : path.dirname(process.execPath);
+
+// import fs from "fs"
+// import path from "path";
+// import keccak256 from "keccak256";
+// import chalk from "chalk";
+
 const fs = require("fs");
+const path = require("path");
 const keccak256 = require("keccak256");
 const chalk = require("chalk");
+
+// const isLocal = typeof process.pkg === "undefined";
+const isLocal = true;
+const basePath = isLocal ? process.cwd() : path.dirname(process.execPath);
+
+
+import { firebaseApp } from "../config/firebase";
+
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  getFirestore,
+  setDoc,
+  updateDoc,
+  
+} from "firebase/firestore";
 
 const { createCanvas, loadImage } = require(path.join(
   basePath,
   "/node_modules/canvas"
 ));
 
-console.log(path.join(basePath, "/src/config.js"));
+const firestore = getFirestore(firebaseApp);
+
+
+console.log(path.join(basePath, "/src/config.ts"));
 const {
   background,
   baseUri,
@@ -37,7 +62,7 @@ const {
   traitValueOverrides,
   uniqueDnaTorrance,
   useRootTraitType,
-} = require(path.join(basePath, "/src/config.js"));
+} = require(path.join(basePath, "/src/config.ts"));
 const canvas = createCanvas(format.width, format.height);
 const ctxMain = canvas.getContext("2d");
 ctxMain.imageSmoothingEnabled = format.smoothing;
@@ -45,12 +70,12 @@ ctxMain.imageSmoothingEnabled = format.smoothing;
 let metadataList = [];
 let attributesList = [];
 
-let dnaList = new Set();
+let dnaList:any = new Set();
 const DNA_DELIMITER = "*";
 
 const zflag = /(z-?\d*,)/;
 
-const buildSetup = () => {
+export const buildSetup = () => {
   if (fs.existsSync(buildDir)) {
     fs.rmdirSync(buildDir, { recursive: true });
   }
@@ -94,14 +119,14 @@ const parseQueryString = (filename, layer, sublayer) => {
     return getElementOptions(layer, sublayer);
   }
 
-  const layerstyles = querystring[1].split("&").reduce((r, setting) => {
+  const layerstyles:any = querystring[1].split("&").reduce((r, setting) => {
     const keyPairs = setting.split("=");
     return { ...r, [keyPairs[0]]: keyPairs[1] };
   }, []);
 
   return {
-    blendmode: layerstyles.blend ? layerstyles.blend : getElementOptions(layer,sublayer).blendmode,
-    opacity: layerstyles.opacity ? layerstyles.opacity / 100 : getElementOptions(layer,sublayer).opacity,
+    blendmode: layerstyles.blend ? layerstyles.blend : getElementOptions(layer, sublayer).blendmode,
+    opacity: layerstyles.opacity ? layerstyles.opacity / 100 : getElementOptions(layer, sublayer).opacity,
   };
 };
 
@@ -109,8 +134,9 @@ const parseQueryString = (filename, layer, sublayer) => {
  * Given some input, creates a sha256 hash.
  * @param {Object} input
  */
-const hash = (input) => {
-  const hashable = typeof input === Buffer ? input : JSON.stringify(input);
+const hash = (input:any) => {
+  // const hashable = typeof input === Buffer ? input : JSON.stringify(input);
+  const hashable = JSON.stringify(input);
   return keccak256(hashable).toString("hex");
 };
 
@@ -163,7 +189,7 @@ const getElements = (path, layer) => {
           ? layer.zindex
           : "";
 
-      const element = {
+      const element:any = {
         sublayer,
         weight,
         blendmode,
@@ -236,24 +262,117 @@ const processTraitOverrides = (trait) => {
   return traitValueOverrides[trait] ? traitValueOverrides[trait] : trait;
 };
 
-const layersSetup = (layersOrder) => {
-  const layers = layersOrder.map((layerObj, index) => {
-    return {
-      id: index,
-      name: layerObj.name,
-      blendmode:
-        layerObj["blend"] != undefined ? layerObj["blend"] : "source-over",
-      opacity: layerObj["opacity"] != undefined ? layerObj["opacity"] : 1,
-      elements: getElements(`${layersDir}/${layerObj.name}/`, layerObj),
-      ...(layerObj.display_type !== undefined && {
-        display_type: layerObj.display_type,
-      }),
-      bypassDNA:
-        layerObj.options?.["bypassDNA"] !== undefined
-          ? layerObj.options?.["bypassDNA"]
-          : false,
-    };
-  });
+const layersSetup = async (layersOrder) => {
+  // const layers = layersOrder.map((layerObj, index) => {
+  //   return {
+  //     id: index,
+  //     name: layerObj.name,
+  //     blendmode:
+  //       layerObj["blend"] != undefined ? layerObj["blend"] : "source-over",
+  //     opacity: layerObj["opacity"] != undefined ? layerObj["opacity"] : 1,
+  //     elements: getElements(`${layersDir}/${layerObj.name}/`, layerObj),
+  //     ...(layerObj.display_type !== undefined && {
+  //       display_type: layerObj.display_type,
+  //     }),
+  //     bypassDNA:
+  //       layerObj.options?.["bypassDNA"] !== undefined
+  //         ? layerObj.options?.["bypassDNA"]
+  //         : false,
+  //   };
+  // });
+
+
+  // const _collection = collection(
+  //   firestore,
+  //   `art-engine/francis/proxima-labs`
+  // );
+
+  
+
+  // const _layers = (await getDocs(_collection)).docs
+
+
+  // console.log({_layers});
+  
+
+
+
+  const layers = [
+    {
+      id: 0,
+      name: 'Background',
+      blendmode: 'source-over',
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: 'source-over',
+          opacity: 1,
+          id: 0,
+          name: 'Background',
+          filename: 'Background#001.png',
+          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Background/Background#001.png',
+          zindex: '',
+          trait: 'Background',
+          traitValue: 'Background'
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: 'source-over',
+          opacity: 1,
+          id: 1,
+          name: 'Background',
+          filename: 'Background#002.png',
+          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Background/Background#002.png',
+          zindex: '',
+          trait: 'Background',
+          traitValue: 'Background'
+        }
+      ],
+      bypassDNA: false
+    },
+    {
+      id: 1,
+      name: 'Skin',
+      blendmode: 'source-over',
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: 'source-over',
+          opacity: 1,
+          id: 0,
+          name: 'Skin',
+          filename: 'Skin#001.png',
+          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Skin/Skin#001.png',
+          zindex: '',
+          trait: 'Skin',
+          traitValue: 'Skin'
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: 'source-over',
+          opacity: 1,
+          id: 1,
+          name: 'Skin',
+          filename: 'Skin#002.png',
+          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Skin/Skin#002.png',
+          zindex: '',
+          trait: 'Skin',
+          traitValue: 'Skin'
+        }
+      ],
+      bypassDNA: false
+    }
+
+  ]
+
+
+
 
   return layers;
 };
@@ -353,7 +472,7 @@ const drawElement = (_renderObject, mainCanvas) => {
   return layerCanvas;
 };
 
-const constructLayerToDna = (_dna = [], _layers = []) => {
+const constructLayerToDna = (_dna:any = [], _layers = []) => {
   const dna = _dna.split(DNA_DELIMITER);
   let mappedDnaToLayers = _layers.map((layer, index) => {
     let selectedElements = [];
@@ -409,7 +528,7 @@ const filterDNAOptions = (_dna) => {
     if (!querystring) {
       return true;
     }
-    const options = querystring[1].split("&").reduce((r, setting) => {
+    const options:any = querystring[1].split("&").reduce((r, setting) => {
       const keyPairs = setting.split("=");
       return { ...r, [keyPairs[0]]: keyPairs[1] };
     }, []);
@@ -643,6 +762,9 @@ const createDna = (_layers) => {
   let incompatibleDNA = [];
   let forcedDNA = [];
 
+
+  
+
   _layers.forEach((layer) => {
     const layerSequence = [];
     pickRandomElement(
@@ -782,7 +904,7 @@ const outputFiles = (abstractedIndexes, layerData) => {
   );
 };
 
-const startCreating = async (storedDNA) => {
+export const startCreating = async (storedDNA) => {
   if (storedDNA) {
     console.log(`using stored dna of ${storedDNA.size}`);
     dnaList = storedDNA;
@@ -795,7 +917,7 @@ const startCreating = async (storedDNA) => {
     let i = startIndex;
     i <=
     startIndex +
-      layerConfigurations[layerConfigurations.length - 1].growEditionSizeTo;
+    layerConfigurations[layerConfigurations.length - 1].growEditionSizeTo;
     i++
   ) {
     abstractedIndexes.push(i);
@@ -807,9 +929,10 @@ const startCreating = async (storedDNA) => {
     ? console.log("Editions left to create: ", abstractedIndexes)
     : null;
   while (layerConfigIndex < layerConfigurations.length) {
-    const layers = layersSetup(
+    const layers:any = await layersSetup(
       layerConfigurations[layerConfigIndex].layersOrder
     );
+    
     while (
       editionCount <= layerConfigurations[layerConfigIndex].growEditionSizeTo
     ) {
