@@ -2,7 +2,6 @@
 /* eslint-disable no-useless-escape */
 "use strict";
 
-
 // import fs from "fs"
 // import path from "path";
 // import keccak256 from "keccak256";
@@ -17,7 +16,6 @@ const chalk = require("chalk");
 const isLocal = true;
 const basePath = isLocal ? process.cwd() : path.dirname(process.execPath);
 
-
 import { firebaseApp } from "../config/firebase";
 
 import {
@@ -28,8 +26,8 @@ import {
   getFirestore,
   setDoc,
   updateDoc,
-  
 } from "firebase/firestore";
+import admin from "../config/admin";
 
 const { createCanvas, loadImage } = require(path.join(
   basePath,
@@ -38,8 +36,8 @@ const { createCanvas, loadImage } = require(path.join(
 
 const firestore = getFirestore(firebaseApp);
 
-
 console.log(path.join(basePath, "/src/config.ts"));
+
 const {
   background,
   baseUri,
@@ -63,6 +61,7 @@ const {
   uniqueDnaTorrance,
   useRootTraitType,
 } = require(path.join(basePath, "/src/config.ts"));
+
 const canvas = createCanvas(format.width, format.height);
 const ctxMain = canvas.getContext("2d");
 ctxMain.imageSmoothingEnabled = format.smoothing;
@@ -70,7 +69,7 @@ ctxMain.imageSmoothingEnabled = format.smoothing;
 let metadataList = [];
 let attributesList = [];
 
-let dnaList:any = new Set();
+let dnaList: any = new Set();
 const DNA_DELIMITER = "*";
 
 const zflag = /(z-?\d*,)/;
@@ -119,14 +118,18 @@ const parseQueryString = (filename, layer, sublayer) => {
     return getElementOptions(layer, sublayer);
   }
 
-  const layerstyles:any = querystring[1].split("&").reduce((r, setting) => {
+  const layerstyles: any = querystring[1].split("&").reduce((r, setting) => {
     const keyPairs = setting.split("=");
     return { ...r, [keyPairs[0]]: keyPairs[1] };
   }, []);
 
   return {
-    blendmode: layerstyles.blend ? layerstyles.blend : getElementOptions(layer, sublayer).blendmode,
-    opacity: layerstyles.opacity ? layerstyles.opacity / 100 : getElementOptions(layer, sublayer).opacity,
+    blendmode: layerstyles.blend
+      ? layerstyles.blend
+      : getElementOptions(layer, sublayer).blendmode,
+    opacity: layerstyles.opacity
+      ? layerstyles.opacity / 100
+      : getElementOptions(layer, sublayer).opacity,
   };
 };
 
@@ -134,7 +137,7 @@ const parseQueryString = (filename, layer, sublayer) => {
  * Given some input, creates a sha256 hash.
  * @param {Object} input
  */
-const hash = (input:any) => {
+const hash = (input: any) => {
   // const hashable = typeof input === Buffer ? input : JSON.stringify(input);
   const hashable = JSON.stringify(input);
   return keccak256(hashable).toString("hex");
@@ -186,10 +189,10 @@ const getElements = (path, layer) => {
       const zindex = zflag.exec(i)
         ? zflag.exec(i)[0]
         : layer.zindex
-          ? layer.zindex
-          : "";
+        ? layer.zindex
+        : "";
 
-      const element:any = {
+      const element: any = {
         sublayer,
         weight,
         blendmode,
@@ -231,8 +234,8 @@ const getElements = (path, layer) => {
       element.trait = layer.sublayerOptions?.[parentName]
         ? layer.sublayerOptions[parentName].trait
         : layer.trait !== undefined
-          ? layer.trait
-          : parentName;
+        ? layer.trait
+        : parentName;
 
       const rawTrait = getTraitValueFromPath(element, lineage);
       const trait = processTraitOverrides(rawTrait);
@@ -281,97 +284,14 @@ const layersSetup = async (layersOrder) => {
   //   };
   // });
 
+  const _layers = await admin
+    .firestore()
+    .collection("art-engine")
+    .doc("francis")
+    .collection("proxima-labs")
+    .get();
 
-  // const _collection = collection(
-  //   firestore,
-  //   `art-engine/francis/proxima-labs`
-  // );
-
-  
-
-  // const _layers = (await getDocs(_collection)).docs
-
-
-  // console.log({_layers});
-  
-
-
-
-  const layers = [
-    {
-      id: 0,
-      name: 'Background',
-      blendmode: 'source-over',
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: 'source-over',
-          opacity: 1,
-          id: 0,
-          name: 'Background',
-          filename: 'Background#001.png',
-          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Background/Background#001.png',
-          zindex: '',
-          trait: 'Background',
-          traitValue: 'Background'
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: 'source-over',
-          opacity: 1,
-          id: 1,
-          name: 'Background',
-          filename: 'Background#002.png',
-          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Background/Background#002.png',
-          zindex: '',
-          trait: 'Background',
-          traitValue: 'Background'
-        }
-      ],
-      bypassDNA: false
-    },
-    {
-      id: 1,
-      name: 'Skin',
-      blendmode: 'source-over',
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: 'source-over',
-          opacity: 1,
-          id: 0,
-          name: 'Skin',
-          filename: 'Skin#001.png',
-          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Skin/Skin#001.png',
-          zindex: '',
-          trait: 'Skin',
-          traitValue: 'Skin'
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: 'source-over',
-          opacity: 1,
-          id: 1,
-          name: 'Skin',
-          filename: 'Skin#002.png',
-          path: '/Users/franciseshun/Desktop/Dev/SailboatLabs/Art-Engine/layers/Skin/Skin#002.png',
-          zindex: '',
-          trait: 'Skin',
-          traitValue: 'Skin'
-        }
-      ],
-      bypassDNA: false
-    }
-
-  ]
-
-
+  const layers = _layers.docs.map((item) => item.data());
 
 
   return layers;
@@ -472,7 +392,7 @@ const drawElement = (_renderObject, mainCanvas) => {
   return layerCanvas;
 };
 
-const constructLayerToDna = (_dna:any = [], _layers = []) => {
+const constructLayerToDna = (_dna: any = [], _layers = []) => {
   const dna = _dna.split(DNA_DELIMITER);
   let mappedDnaToLayers = _layers.map((layer, index) => {
     let selectedElements = [];
@@ -528,7 +448,7 @@ const filterDNAOptions = (_dna) => {
     if (!querystring) {
       return true;
     }
-    const options:any = querystring[1].split("&").reduce((r, setting) => {
+    const options: any = querystring[1].split("&").reduce((r, setting) => {
       const keyPairs = setting.split("=");
       return { ...r, [keyPairs[0]]: keyPairs[1] };
     }, []);
@@ -594,9 +514,9 @@ function pickRandomElement(
   if (incompatibleDNA.includes(layer.name) && layer.sublayer) {
     debugLogs
       ? console.log(
-        `Skipping incompatible sublayer directory, ${layer.name}`,
-        layer.name
-      )
+          `Skipping incompatible sublayer directory, ${layer.name}`,
+          layer.name
+        )
       : null;
     return dnaSequence;
   }
@@ -607,11 +527,11 @@ function pickRandomElement(
   if (compatibleLayers.length === 0) {
     debugLogs
       ? console.log(
-        chalk.yellow(
-          "No compatible layers in the directory, skipping",
-          layer.name
+          chalk.yellow(
+            "No compatible layers in the directory, skipping",
+            layer.name
+          )
         )
-      )
       : null;
     return dnaSequence;
   }
@@ -660,9 +580,9 @@ function pickRandomElement(
       if (incompatible[currentLayers[i].name]) {
         debugLogs
           ? console.log(
-            `Adding the following to incompatible list`,
-            ...incompatible[currentLayers[i].name]
-          )
+              `Adding the following to incompatible list`,
+              ...incompatible[currentLayers[i].name]
+            )
           : null;
         incompatibleDNA.push(...incompatible[currentLayers[i].name]);
       }
@@ -670,11 +590,11 @@ function pickRandomElement(
       if (forcedCombinations[currentLayers[i].name]) {
         debugLogs
           ? console.log(
-            chalk.bgYellowBright.black(
-              `\nSetting up the folling forced combinations for ${currentLayers[i].name}: `,
-              ...forcedCombinations[currentLayers[i].name]
+              chalk.bgYellowBright.black(
+                `\nSetting up the folling forced combinations for ${currentLayers[i].name}: `,
+                ...forcedCombinations[currentLayers[i].name]
+              )
             )
-          )
           : null;
         forcedDNA.push(...forcedCombinations[currentLayers[i].name]);
       }
@@ -762,9 +682,6 @@ const createDna = (_layers) => {
   let incompatibleDNA = [];
   let forcedDNA = [];
 
-
-  
-
   _layers.forEach((layer) => {
     const layerSequence = [];
     pickRandomElement(
@@ -796,8 +713,8 @@ const saveMetaDataSingleFile = (_editionCount) => {
   let metadata = metadataList.find((meta) => meta.edition == _editionCount);
   debugLogs
     ? console.log(
-      `Writing metadata for ${_editionCount}: ${JSON.stringify(metadata)}`
-    )
+        `Writing metadata for ${_editionCount}: ${JSON.stringify(metadata)}`
+      )
     : null;
   fs.writeFileSync(
     `${buildDir}/json/${_editionCount}.json`,
@@ -917,7 +834,7 @@ export const startCreating = async (storedDNA) => {
     let i = startIndex;
     i <=
     startIndex +
-    layerConfigurations[layerConfigurations.length - 1].growEditionSizeTo;
+      layerConfigurations[layerConfigurations.length - 1].growEditionSizeTo;
     i++
   ) {
     abstractedIndexes.push(i);
@@ -929,10 +846,10 @@ export const startCreating = async (storedDNA) => {
     ? console.log("Editions left to create: ", abstractedIndexes)
     : null;
   while (layerConfigIndex < layerConfigurations.length) {
-    const layers:any = await layersSetup(
+    const layers: any = await layersSetup(
       layerConfigurations[layerConfigIndex].layersOrder
     );
-    
+
     while (
       editionCount <= layerConfigurations[layerConfigIndex].growEditionSizeTo
     ) {
