@@ -284,15 +284,14 @@ const layersSetup = async (layersOrder) => {
   //   };
   // });
 
-  const _layers = await admin
-    .firestore()
-    .collection("art-engine")
-    .doc("francis")
-    .collection("proxima-labs")
-    .get();
-
-  const layers = _layers.docs.map((item) => item.data());
-
+  const layers = (
+    await admin
+      .firestore()
+      .collection("art-engine")
+      .doc("francis")
+      .collection("proxima-labs")
+      .get()
+  ).docs.map((item) => item.data());
 
   return layers;
 };
