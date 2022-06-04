@@ -1,4 +1,6 @@
 export interface IConfig {
+  address?:string,
+  collection?:string,
   description: string;
   baseUri: string;
   startIndex: number;

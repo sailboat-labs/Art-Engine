@@ -11,6 +11,7 @@ const fs = require("fs");
 const path = require("path");
 const keccak256 = require("keccak256");
 const chalk = require("chalk");
+const { v4: uuidv4 } = require("uuid");
 
 // const isLocal = typeof process.pkg === "undefined";
 const isLocal = true;
@@ -29,6 +30,7 @@ import {
 } from "firebase/firestore";
 import admin from "../config/admin";
 import { IConfig } from "./interfaces";
+import { storageRef } from "./config";
 
 const { createCanvas, loadImage } = require(path.join(
   basePath,
@@ -390,13 +392,63 @@ const layersSetup = async ({ address, collection }: payloadProps) => {
   return layers;
 };
 
-const saveImage = (_editionCount, address, collection) => {
+async function uploadFile(path, filename, address, collection) {
+  const storage = await storageRef
+    .upload(path, {
+      public: true,
+      destination: `art-engine/${address}/${collection}/${filename}`,
+      contentType: `image/${configuration.outputJPEG ? "jpg" : "png"}`,
+      metadata: {
+        firebaseStorageDownloadTokens: uuidv4(),
+      },
+    })
+    .then(() => {
+      const file = storageRef.file(
+        `art-engine/${address}/${collection}/${filename}`
+      );
+      return file
+        .getSignedUrl({
+          action: "read",
+          expires: "03-25-2023",
+        })
+        .then(async (signedUrls) => {
+          // signedUrls[0] contains the file's public URL
+
+          await admin
+            .firestore()
+            .collection("art-engine")
+            .doc(address)
+            .collection("test")
+            .doc("output")
+            .collection("images")
+            .doc(filename?.toString())
+            .set({ filename, url: signedUrls[0],createdOn:new Date().toISOString() });
+        });
+    });
+}
+
+const saveImage = async (_editionCount, address, collection) => {
   fs.writeFileSync(
     `${buildDir}/images/${address}/${collection}/${_editionCount}${
       configuration.outputJPEG ? ".jpg" : ".png"
     }`,
     canvas.toBuffer(`${configuration.outputJPEG ? "image/jpeg" : "image/png"}`)
   );
+
+  uploadFile(
+    `${buildDir}/images/${address}/${collection}/${_editionCount}${
+      configuration.outputJPEG ? ".jpg" : ".png"
+    }`,
+    _editionCount,
+    address,
+    collection
+  );
+
+  // await admin
+  //       .firestore()
+  //       .collection("deletedCompanies")
+  //       .doc(company.id)
+  //       .set({ ...company, ...{ deletedAt: new Date().toISOString() } });
 };
 
 const genColor = () => {

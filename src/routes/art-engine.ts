@@ -1,3 +1,4 @@
+import { generateTokens } from "./../generate_tokens";
 import { buildSetup, startCreating } from "../main";
 
 const { Router } = require("express");
@@ -12,6 +13,7 @@ router.post("/generate", async (req, res) => {
   res.send("generation started");
   buildSetup({ address, collection });
   startCreating({ address, collection });
+  // generateTokens({ address, collection });
 });
 
 module.exports = router;
