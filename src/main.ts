@@ -68,7 +68,7 @@ const extraAttributes = () => [
 ];
 
 //settings
-const debugLogs = false
+const debugLogs = false;
 export const configuration: IConfig = {
   description: "This is the description",
   baseUri: "ipfs://NewUriToReplace",
@@ -77,7 +77,7 @@ export const configuration: IConfig = {
     width: 1024,
     height: 1024,
     smoothing: true,
-    weight:1
+    weight: 1,
   },
   background: {
     generate: true,
@@ -97,7 +97,7 @@ export const configuration: IConfig = {
       ],
     },
   ],
-  extraAttributes:[],
+  extraAttributes: [],
   shuffleLayerConfigurations: true,
   emptyLayerName: "NONE",
   forcedCombinations: {},
@@ -116,19 +116,18 @@ export const configuration: IConfig = {
     delay: 500,
     imageName: "preview.gif",
   },
-  rarityDelimiter:"#",
-  useRootTraitType:true,
-  outputJPEG:false,
-  incompatible:{},
-  uniqueDnaTorrance:10000,
-  traitValueOverrides:{
-    
-  }
+  rarityDelimiter: "#",
+  useRootTraitType: true,
+  outputJPEG: false,
+  incompatible: {},
+  uniqueDnaTorrance: 10000,
+  traitValueOverrides: {},
 };
 
-
-
-const canvas = createCanvas(configuration.format.width, configuration.format.height);
+const canvas = createCanvas(
+  configuration.format.width,
+  configuration.format.height
+);
 const ctxMain = canvas.getContext("2d");
 ctxMain.imageSmoothingEnabled = configuration.format.smoothing;
 
@@ -139,17 +138,36 @@ const DNA_DELIMITER = "*";
 
 const zflag = /(z-?\d*,)/;
 
-
-
 export const buildSetup = ({ address, collection }) => {
-  if (fs.existsSync(buildDir)) {
-    fs.rmdirSync(buildDir, { recursive: true });
+  if (!fs.existsSync(buildDir)) {
+    fs.mkdirSync(buildDir);
   }
-  
-  fs.mkdirSync(buildDir);
-  fs.mkdirSync(path.join(buildDir, "/json"));
-  fs.mkdirSync(path.join(buildDir, "/images"));
-  fs.mkdirSync(path.join(`${buildDir}/images`, `/${address}`));
+  if (!fs.existsSync(`${buildDir}/json`)) {
+    fs.mkdirSync(path.join(buildDir, "/json"));
+  }
+  if (!fs.existsSync(`${buildDir}/images`)) {
+    fs.mkdirSync(path.join(buildDir, "/images"));
+  }
+
+  if (!fs.existsSync(`${buildDir}/json/${address}`)) {
+    fs.mkdirSync(path.join(buildDir, `/json/${address}`));
+  }
+  if (!fs.existsSync(`${buildDir}/images/${address}`)) {
+    fs.mkdirSync(path.join(buildDir, `/images/${address}`));
+  }
+
+  if (fs.existsSync(`${buildDir}/json/${address}/${collection}`)) {
+    fs.rmdirSync(`${buildDir}/json/${address}/${collection}`, {
+      recursive: true,
+    });
+  }
+  fs.mkdirSync(path.join(`${buildDir}/json/${address}`, `/${collection}`));
+
+  if (fs.existsSync(`${buildDir}/images/${address}/${collection}`)) {
+    fs.rmdirSync(`${buildDir}/images/${address}/${collection}`, {
+      recursive: true,
+    });
+  }
   fs.mkdirSync(path.join(`${buildDir}/images/${address}`, `/${collection}`));
 };
 
@@ -177,7 +195,9 @@ const cleanName = (_str) => {
   const extension = /\.[0-9a-zA-Z]+$/;
   const hasExtension = extension.test(zRemoved);
   let nameWithoutExtension = hasExtension ? zRemoved.slice(0, -4) : zRemoved;
-  var nameWithoutWeight = nameWithoutExtension.split(configuration.rarityDelimiter).shift();
+  var nameWithoutWeight = nameWithoutExtension
+    .split(configuration.rarityDelimiter)
+    .shift();
   return nameWithoutWeight;
 };
 
@@ -294,7 +314,9 @@ const getElements = (path, layer) => {
       // we need to check if the parent is required, or if it's a prop-folder
       if (
         configuration.useRootTraitType &&
-        lineage[lineage.length - typeAncestor].includes(configuration.rarityDelimiter)
+        lineage[lineage.length - typeAncestor].includes(
+          configuration.rarityDelimiter
+        )
       ) {
         typeAncestor += 1;
       }
@@ -332,10 +354,12 @@ const getTraitValueFromPath = (element, lineage) => {
  * @returns String trait of either overridden value of raw default.
  */
 const processTraitOverrides = (trait) => {
-  return configuration.traitValueOverrides[trait] ? configuration.traitValueOverrides[trait] : trait;
+  return configuration.traitValueOverrides[trait]
+    ? configuration.traitValueOverrides[trait]
+    : trait;
 };
 
-const layersSetup = async ({address,collection}:payloadProps) => {
+const layersSetup = async ({ address, collection }: payloadProps) => {
   // const layers = layersOrder.map((layerObj, index) => {
   //   return {
   //     id: index,
@@ -363,15 +387,14 @@ const layersSetup = async ({address,collection}:payloadProps) => {
       .get()
   ).docs.map((item) => item.data());
 
-
-  
-
   return layers;
 };
 
-const saveImage = (_editionCount, address,collection) => {
+const saveImage = (_editionCount, address, collection) => {
   fs.writeFileSync(
-    `${buildDir}/images/${address}/${collection}/${_editionCount}${configuration.outputJPEG ? ".jpg" : ".png"}`,
+    `${buildDir}/images/${address}/${collection}/${_editionCount}${
+      configuration.outputJPEG ? ".jpg" : ".png"
+    }`,
     canvas.toBuffer(`${configuration.outputJPEG ? "image/jpeg" : "image/png"}`)
   );
 };
@@ -384,7 +407,12 @@ const genColor = () => {
 
 const drawBackground = (canvasContext) => {
   canvasContext.fillStyle = genColor();
-  canvasContext.fillRect(0, 0, configuration.format.width, configuration.format.height);
+  canvasContext.fillRect(
+    0,
+    0,
+    configuration.format.width,
+    configuration.format.height
+  );
 };
 
 const addMetadata = (_dna, _edition, _prefixData) => {
@@ -405,7 +433,9 @@ const addMetadata = (_dna, _edition, _prefixData) => {
     dna: hash(_dna),
     name: `${_prefix ? _prefix + " " : ""}#${_edition - _offset}`,
     description: configuration.description,
-    image: `${configuration.baseUri}/${_edition}${configuration.outputJPEG ? ".jpg" : ".png"}`,
+    image: `${configuration.baseUri}/${_edition}${
+      configuration.outputJPEG ? ".jpg" : ".png"
+    }`,
     ...(configuration.hashImages === true && { imageHash: _imageHash }),
     edition: _edition,
     date: dateTime,
@@ -446,7 +476,10 @@ const loadLayerImg = async (_layer) => {
 };
 
 const drawElement = (_renderObject, mainCanvas) => {
-  const layerCanvas = createCanvas(configuration.format.width, configuration.format.height);
+  const layerCanvas = createCanvas(
+    configuration.format.width,
+    configuration.format.height
+  );
   const layerctx = layerCanvas.getContext("2d");
   layerctx.imageSmoothingEnabled = configuration.format.smoothing;
 
@@ -459,7 +492,13 @@ const drawElement = (_renderObject, mainCanvas) => {
   );
 
   addAttributes(_renderObject);
-  mainCanvas.drawImage(layerCanvas, 0, 0, configuration.format.width, configuration.format.height);
+  mainCanvas.drawImage(
+    layerCanvas,
+    0,
+    0,
+    configuration.format.width,
+    configuration.format.height
+  );
   return layerCanvas;
 };
 
@@ -542,8 +581,6 @@ const removeQueryStrings = (_dna) => {
   const query = /(\?.*$)/;
   return _dna.replace(query, "");
 };
-
-
 
 // expecting to return an array of strings for each _layer_ that is picked,
 // should be a flattened list of all things that are picked randomly AND reqiured
@@ -653,7 +690,9 @@ function pickRandomElement(
               ...configuration.incompatible[currentLayers[i].name]
             )
           : null;
-        incompatibleDNA.push(...configuration.incompatible[currentLayers[i].name]);
+        incompatibleDNA.push(
+          ...configuration.incompatible[currentLayers[i].name]
+        );
       }
       // Similar to incompaticle, check for forced combos
       if (configuration.forcedCombinations[currentLayers[i].name]) {
@@ -665,7 +704,9 @@ function pickRandomElement(
               )
             )
           : null;
-        forcedDNA.push(...configuration.forcedCombinations[currentLayers[i].name]);
+        forcedDNA.push(
+          ...configuration.forcedCombinations[currentLayers[i].name]
+        );
       }
       // if there's a sublayer, we need to concat the sublayers parent ID to the DNA srting
       // and recursively pick nested required and random elements
@@ -778,7 +819,7 @@ const writeDnaLog = (_data) => {
   fs.writeFileSync(`${buildDir}/_dna.json`, _data);
 };
 
-const saveMetaDataSingleFile = (_editionCount) => {
+const saveMetaDataSingleFile = (_editionCount, address, collection) => {
   let metadata = metadataList.find((meta) => meta.edition == _editionCount);
   debugLogs
     ? console.log(
@@ -786,7 +827,7 @@ const saveMetaDataSingleFile = (_editionCount) => {
       )
     : null;
   fs.writeFileSync(
-    `${buildDir}/json/${_editionCount}.json`,
+    `${buildDir}/json/${address}/${collection}/${_editionCount}.json`,
     JSON.stringify(metadata, null, 2)
   );
 };
@@ -814,7 +855,12 @@ function shuffle(array) {
  */
 const paintLayers = (canvasContext, renderObjectArray, layerData) => {
   debugLogs ? console.log("\nClearing canvas") : null;
-  canvasContext.clearRect(0, 0, configuration.format.width, configuration.format.height);
+  canvasContext.clearRect(
+    0,
+    0,
+    configuration.format.width,
+    configuration.format.height
+  );
 
   const { abstractedIndexes, _background } = layerData;
 
@@ -842,11 +888,13 @@ const paintLayers = (canvasContext, renderObjectArray, layerData) => {
     : null;
 };
 
-const postProcessMetadata = (layerData,address,collection) => {
+const postProcessMetadata = (layerData, address, collection) => {
   const { abstractedIndexes, layerConfigIndex } = layerData;
   // Metadata options
   const savedFile = fs.readFileSync(
-    `${buildDir}/images/${address}/${collection}/${abstractedIndexes[0]}${configuration.outputJPEG ? ".jpg" : ".png"}`
+    `${buildDir}/images/${address}/${collection}/${abstractedIndexes[0]}${
+      configuration.outputJPEG ? ".jpg" : ".png"
+    }`
   );
   const _imageHash = hash(savedFile);
 
@@ -859,7 +907,8 @@ const postProcessMetadata = (layerData,address,collection) => {
   // with the prefix
   let _offset = 0;
   if (configuration.layerConfigurations[layerConfigIndex].resetNameIndex) {
-    _offset = configuration.layerConfigurations[layerConfigIndex - 1].growEditionSizeTo;
+    _offset =
+      configuration.layerConfigurations[layerConfigIndex - 1].growEditionSizeTo;
   }
 
   return {
@@ -869,12 +918,16 @@ const postProcessMetadata = (layerData,address,collection) => {
   };
 };
 
-const outputFiles = (abstractedIndexes, layerData, address,collection) => {
+const outputFiles = (abstractedIndexes, layerData, address, collection) => {
   const { newDna, layerConfigIndex } = layerData;
   // Save the canvas buffer to file
-  saveImage(abstractedIndexes[0], address,collection);
+  saveImage(abstractedIndexes[0], address, collection);
 
-  const { _imageHash, _prefix, _offset } = postProcessMetadata(layerData,address,collection);
+  const { _imageHash, _prefix, _offset } = postProcessMetadata(
+    layerData,
+    address,
+    collection
+  );
 
   addMetadata(newDna, abstractedIndexes[0], {
     _prefix,
@@ -882,7 +935,7 @@ const outputFiles = (abstractedIndexes, layerData, address,collection) => {
     _imageHash,
   });
 
-  saveMetaDataSingleFile(abstractedIndexes[0]);
+  saveMetaDataSingleFile(abstractedIndexes[0], address, collection);
   console.log(
     chalk.cyan(
       `Created edition: ${abstractedIndexes[0]}, with DNA: ${hash(newDna)}`
@@ -891,12 +944,12 @@ const outputFiles = (abstractedIndexes, layerData, address,collection) => {
 };
 
 type payloadProps = {
-  address:string;
-  collection:string
-}
+  address: string;
+  collection: string;
+};
 
-export const startCreating = async ({address,collection}:payloadProps) => {
-let dnaList: any = new Set();
+export const startCreating = async ({ address, collection }: payloadProps) => {
+  let dnaList: any = new Set();
 
   // if (storedDNA) {
   //   console.log(`using stored dna of ${storedDNA.size}`);
@@ -910,7 +963,9 @@ let dnaList: any = new Set();
     let i = configuration.startIndex;
     i <=
     configuration.startIndex +
-    configuration.layerConfigurations[configuration.layerConfigurations.length - 1].growEditionSizeTo;
+      configuration.layerConfigurations[
+        configuration.layerConfigurations.length - 1
+      ].growEditionSizeTo;
     i++
   ) {
     abstractedIndexes.push(i);
@@ -922,18 +977,19 @@ let dnaList: any = new Set();
     ? console.log("Editions left to create: ", abstractedIndexes)
     : null;
   while (layerConfigIndex < configuration.layerConfigurations.length) {
-    const layers: any = await layersSetup({address,collection});
+    const layers: any = await layersSetup({ address, collection });
 
     while (
-      editionCount <= configuration.layerConfigurations[layerConfigIndex].growEditionSizeTo
+      editionCount <=
+      configuration.layerConfigurations[layerConfigIndex].growEditionSizeTo
     ) {
       let newDna = createDna(layers);
-      console.log({newDna});
-      
+      console.log({ newDna });
+
       // console.log({dnaList});
 
-      const isDnaUnique = !dnaList.has(newDna)
-      
+      const isDnaUnique = !dnaList.has(newDna);
+
       if (isDnaUnique) {
         let results = constructLayerToDna(newDna, layers);
         debugLogs ? console.log("DNA:", newDna.split(DNA_DELIMITER)) : null;
@@ -954,7 +1010,7 @@ let dnaList: any = new Set();
             _background: configuration.background,
           };
           paintLayers(ctxMain, renderObjectArray, layerData);
-          outputFiles(abstractedIndexes, layerData,address,collection);
+          outputFiles(abstractedIndexes, layerData, address, collection);
         });
 
         dnaList.add(filterDNAOptions(newDna));
@@ -964,7 +1020,7 @@ let dnaList: any = new Set();
         // console.log(chalk.bgRed("DNA exists!"));
         failedCount++;
         // console.log(failedCount);
-        
+
         if (failedCount >= configuration.uniqueDnaTorrance) {
           console.log(
             `You need more layers or elements to grow your edition to ${configuration.layerConfigurations[layerConfigIndex].growEditionSizeTo} artworks!`
