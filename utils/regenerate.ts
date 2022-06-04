@@ -1,4 +1,7 @@
 "use strict";
+
+import { IConfig } from "../src/interfaces";
+
 /**
  * The regeneration util uses the output _dna.json file to "continue" the same
  * uniqueness check the main generator uses when running the inital generation.
@@ -11,10 +14,10 @@
  * (while changes are low) that item is not recreated again.
  */
 
-const isLocal = typeof process.pkg === "undefined";
+const isLocal = true
+const path = require("path");
 const basePath = isLocal ? process.cwd() : path.dirname(process.execPath);
 const fs = require("fs");
-const path = require("path");
 const { Command } = require("commander");
 const program = new Command();
 const { createCanvas } = require("canvas");
@@ -26,14 +29,65 @@ const imageDir = `${basePath}/build/images`;
 const dnaFilePath = `${basePath}/build/_dna.json`;
 const metadataFilePath = `${basePath}/build/json/_metadata.json`;
 
-const {
-  format,
-  background,
-  uniqueDnaTorrance,
-  layerConfigurations,
-  outputJPEG,
-  startIndex,
-} = require(path.join(basePath, "/src/config.js"));
+
+export const configuration: IConfig = {
+  description: "This is the description",
+  baseUri: "ipfs://NewUriToReplace",
+  startIndex: 0,
+  format: {
+    width: 1024,
+    height: 1024,
+    smoothing: true,
+    weight:1
+  },
+  background: {
+    generate: true,
+    brightness: "100%",
+  },
+  layerConfigurations: [
+    {
+      growEditionSizeTo: 4,
+      namePrefix: "NZMX Club", // Use to add a name to Metadata `name:`
+      layersOrder: [
+        { name: "Background" },
+        { name: "Skin" },
+        { name: "Eyes" },
+        { name: "Clothes" },
+        { name: "Head Accessory" },
+        { name: "Bling" },
+      ],
+    },
+  ],
+  extraAttributes:[],
+  shuffleLayerConfigurations: true,
+  emptyLayerName: "NONE",
+  forcedCombinations: {},
+  hashImages: true,
+  preview: {
+    thumbPerRow: 8,
+    thumbWidth: 1000,
+    imageRatio: 1,
+    imageName: "preview.png",
+  },
+  preview_gif: {
+    numberOfImages: 64,
+    order: "ASC", // ASC, DESC, MIXED
+    repeat: 1,
+    quality: 200,
+    delay: 500,
+    imageName: "preview.gif",
+  },
+  rarityDelimiter:"#",
+  useRootTraitType:true,
+  outputJPEG:false,
+  incompatible:{},
+  uniqueDnaTorrance:10000,
+  traitValueOverrides:{
+    
+  }
+};
+
+
 
 const {
   createDna,
@@ -45,11 +99,11 @@ const {
   loadLayerImg,
   addMetadata,
   postProcessMetadata,
-} = require(path.join(basePath, "/src/main.js"));
+} = require(path.join(basePath, "/src/main.ts"));
 
 let failedCount = 0;
 let attributesList = [];
-const canvas = createCanvas(format.width, format.height);
+const canvas = createCanvas(configuration.format.width, configuration.format.height);
 const ctxMain = canvas.getContext("2d");
 
 const getDNA = () => {
@@ -66,7 +120,7 @@ const createItem = (layers) => {
   } else {
     failedCount++;
     createItem(layers);
-    if (failedCount >= uniqueDnaTorrance) {
+    if (failedCount >= configuration.uniqueDnaTorrance) {
       console.log(
         chalk.redBright(
           `You need more layers or elements to create a new, unique item`
@@ -82,8 +136,8 @@ const outputFiles = (_id, layerData, options) => {
 
   // Save the image
   fs.writeFileSync(
-    `${imageDir}/${_id}${outputJPEG ? ".jpg" : ".png"}`,
-    canvas.toBuffer(`${outputJPEG ? "image/jpeg" : "image/png"}`)
+    `${imageDir}/${_id}${configuration.outputJPEG ? ".jpg" : ".png"}`,
+    canvas.toBuffer(`${configuration.outputJPEG ? "image/jpeg" : "image/png"}`)
   );
 
   const { _imageHash, _prefix, _offset } = postProcessMetadata(layerData);
@@ -102,7 +156,7 @@ const outputFiles = (_id, layerData, options) => {
 
   const originalMetadata = JSON.parse(fs.readFileSync(metadataFilePath));
   const updatedMetadata = [...originalMetadata];
-  const editionIndex = _id - startIndex;
+  const editionIndex = _id - configuration.startIndex;
   updatedMetadata[editionIndex] = metadata;
   fs.writeFileSync(metadataFilePath, JSON.stringify(updatedMetadata, null, 2));
 };
@@ -110,14 +164,14 @@ const outputFiles = (_id, layerData, options) => {
 const regenerateItem = (_id, options) => {
   // get the dna lists
   // FIgure out which layer config set it's from
-  const layerEdition = layerConfigurations.reduce((acc, config) => {
+  const layerEdition = configuration.layerConfigurations.reduce((acc, config) => {
     return [...acc, config.growEditionSizeTo];
   }, []);
   const layerConfigIndex = layerEdition.findIndex(
     (editionCount) => _id <= editionCount
   );
 
-  const layers = layersSetup(layerConfigurations[layerConfigIndex].layersOrder);
+  const layers = layersSetup(configuration.layerConfigurations[layerConfigIndex].layersOrder);
 
   const { newDna, layerImages } = createItem(layers);
   options.debug ? console.log({ newDna }) : null;
@@ -136,7 +190,7 @@ const regenerateItem = (_id, options) => {
       newDna,
       layerConfigIndex,
       abstractedIndexes: [_id],
-      _background: background,
+      _background: configuration.background,
     };
     // paint layers to global canvas context.. no return value
     paintLayers(ctxMain, renderObjectArray, layerData);
@@ -148,7 +202,7 @@ const regenerateItem = (_id, options) => {
 
     const updatedDnaList = [...existingDnaFlat];
     // find the correct entry and update it
-    const dnaIndex = _id - startIndex;
+    const dnaIndex = _id - configuration.startIndex;
     updatedDnaList[dnaIndex] = newDna;
 
     options.debug

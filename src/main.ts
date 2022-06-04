@@ -28,6 +28,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import admin from "../config/admin";
+import { IConfig } from "./interfaces";
 
 const { createCanvas, loadImage } = require(path.join(
   basePath,
@@ -38,49 +39,118 @@ const firestore = getFirestore(firebaseApp);
 
 console.log(path.join(basePath, "/src/config.ts"));
 
-const {
-  background,
-  baseUri,
-  buildDir,
-  debugLogs,
-  description,
-  emptyLayerName,
-  extraAttributes,
-  extraMetadata,
-  forcedCombinations,
-  format,
-  hashImages,
-  incompatible,
-  layerConfigurations,
-  layersDir,
-  outputJPEG,
-  rarityDelimiter,
-  shuffleLayerConfigurations,
-  startIndex,
-  traitValueOverrides,
-  uniqueDnaTorrance,
-  useRootTraitType,
-} = require(path.join(basePath, "/src/config.ts"));
+const buildDir = path.join(basePath, "/build");
+const layersDir = path.join(basePath, "/layers");
 
-const canvas = createCanvas(format.width, format.height);
+const extraAttributes = () => [
+  // Optionally, if you need to overwrite one of your layers attributes.
+  // You can include the same name as the layer, here, and it will overwrite
+  //
+  // {
+  // trait_type: "Bottom lid",
+  //   value: ` Bottom lid # ${Math.random() * 100}`,
+  // },
+  // {
+  //   display_type: "boost_number",
+  //   trait_type: "Aqua Power",
+  //   value: Math.random() * 100,
+  // },
+  // {
+  //   display_type: "boost_number",
+  //   trait_type: "Health",
+  //   value: Math.random() * 100,
+  // },
+  // {
+  //   display_type: "boost_number",
+  //   trait_type: "Mana",
+  //   value: Math.floor(Math.random() * 100),
+  // },
+];
+
+//settings
+const debugLogs = false
+export const configuration: IConfig = {
+  description: "This is the description",
+  baseUri: "ipfs://NewUriToReplace",
+  startIndex: 0,
+  format: {
+    width: 1024,
+    height: 1024,
+    smoothing: true,
+    weight:1
+  },
+  background: {
+    generate: true,
+    brightness: "100%",
+  },
+  layerConfigurations: [
+    {
+      growEditionSizeTo: 4,
+      namePrefix: "NZMX Club", // Use to add a name to Metadata `name:`
+      layersOrder: [
+        { name: "Background" },
+        { name: "Skin" },
+        { name: "Eyes" },
+        { name: "Clothes" },
+        { name: "Head Accessory" },
+        { name: "Bling" },
+      ],
+    },
+  ],
+  extraAttributes:[],
+  shuffleLayerConfigurations: true,
+  emptyLayerName: "NONE",
+  forcedCombinations: {},
+  hashImages: true,
+  preview: {
+    thumbPerRow: 8,
+    thumbWidth: 1000,
+    imageRatio: 1,
+    imageName: "preview.png",
+  },
+  preview_gif: {
+    numberOfImages: 64,
+    order: "ASC", // ASC, DESC, MIXED
+    repeat: 1,
+    quality: 200,
+    delay: 500,
+    imageName: "preview.gif",
+  },
+  rarityDelimiter:"#",
+  useRootTraitType:true,
+  outputJPEG:false,
+  incompatible:{},
+  uniqueDnaTorrance:10000,
+  traitValueOverrides:{
+    
+  }
+};
+
+
+
+const canvas = createCanvas(configuration.format.width, configuration.format.height);
 const ctxMain = canvas.getContext("2d");
-ctxMain.imageSmoothingEnabled = format.smoothing;
+ctxMain.imageSmoothingEnabled = configuration.format.smoothing;
 
 let metadataList = [];
 let attributesList = [];
 
-let dnaList: any = new Set();
 const DNA_DELIMITER = "*";
 
 const zflag = /(z-?\d*,)/;
 
-export const buildSetup = () => {
+
+
+export const buildSetup = ({ address, collection }) => {
   if (fs.existsSync(buildDir)) {
     fs.rmdirSync(buildDir, { recursive: true });
   }
+  
   fs.mkdirSync(buildDir);
   fs.mkdirSync(path.join(buildDir, "/json"));
   fs.mkdirSync(path.join(buildDir, "/images"));
+  fs.mkdirSync(path.join(`${buildDir}/images`, `/${address}`));
+  fs.mkdirSync(path.join(`${buildDir}/images/${address}`, `/${collection}`));
 };
 
 const getRarityWeight = (_path) => {
@@ -107,7 +177,7 @@ const cleanName = (_str) => {
   const extension = /\.[0-9a-zA-Z]+$/;
   const hasExtension = extension.test(zRemoved);
   let nameWithoutExtension = hasExtension ? zRemoved.slice(0, -4) : zRemoved;
-  var nameWithoutWeight = nameWithoutExtension.split(rarityDelimiter).shift();
+  var nameWithoutWeight = nameWithoutExtension.split(configuration.rarityDelimiter).shift();
   return nameWithoutWeight;
 };
 
@@ -223,8 +293,8 @@ const getElements = (path, layer) => {
       }
       // we need to check if the parent is required, or if it's a prop-folder
       if (
-        useRootTraitType &&
-        lineage[lineage.length - typeAncestor].includes(rarityDelimiter)
+        configuration.useRootTraitType &&
+        lineage[lineage.length - typeAncestor].includes(configuration.rarityDelimiter)
       ) {
         typeAncestor += 1;
       }
@@ -262,10 +332,10 @@ const getTraitValueFromPath = (element, lineage) => {
  * @returns String trait of either overridden value of raw default.
  */
 const processTraitOverrides = (trait) => {
-  return traitValueOverrides[trait] ? traitValueOverrides[trait] : trait;
+  return configuration.traitValueOverrides[trait] ? configuration.traitValueOverrides[trait] : trait;
 };
 
-const layersSetup = async (layersOrder) => {
+const layersSetup = async ({address,collection}:payloadProps) => {
   // const layers = layersOrder.map((layerObj, index) => {
   //   return {
   //     id: index,
@@ -273,7 +343,7 @@ const layersSetup = async (layersOrder) => {
   //     blendmode:
   //       layerObj["blend"] != undefined ? layerObj["blend"] : "source-over",
   //     opacity: layerObj["opacity"] != undefined ? layerObj["opacity"] : 1,
-  //     elements: getElements(`${layersDir}/${layerObj.name}/`, layerObj),
+  //     elements: getElements(`${layersDir}/${layerObj.name}/`, layerObj),``
   //     ...(layerObj.display_type !== undefined && {
   //       display_type: layerObj.display_type,
   //     }),
@@ -288,30 +358,33 @@ const layersSetup = async (layersOrder) => {
     await admin
       .firestore()
       .collection("art-engine")
-      .doc("francis")
-      .collection("proxima-labs")
+      .doc(address)
+      .collection(collection)
       .get()
   ).docs.map((item) => item.data());
+
+
+  
 
   return layers;
 };
 
-const saveImage = (_editionCount) => {
+const saveImage = (_editionCount, address,collection) => {
   fs.writeFileSync(
-    `${buildDir}/images/${_editionCount}${outputJPEG ? ".jpg" : ".png"}`,
-    canvas.toBuffer(`${outputJPEG ? "image/jpeg" : "image/png"}`)
+    `${buildDir}/images/${address}/${collection}/${_editionCount}${configuration.outputJPEG ? ".jpg" : ".png"}`,
+    canvas.toBuffer(`${configuration.outputJPEG ? "image/jpeg" : "image/png"}`)
   );
 };
 
 const genColor = () => {
   let hue = Math.floor(Math.random() * 360);
-  let pastel = `hsl(${hue}, 100%, ${background.brightness})`;
+  let pastel = `hsl(${hue}, 100%, ${configuration.background.brightness})`;
   return pastel;
 };
 
 const drawBackground = (canvasContext) => {
   canvasContext.fillStyle = genColor();
-  canvasContext.fillRect(0, 0, format.width, format.height);
+  canvasContext.fillRect(0, 0, configuration.format.width, configuration.format.height);
 };
 
 const addMetadata = (_dna, _edition, _prefixData) => {
@@ -331,12 +404,11 @@ const addMetadata = (_dna, _edition, _prefixData) => {
   let tempMetadata = {
     dna: hash(_dna),
     name: `${_prefix ? _prefix + " " : ""}#${_edition - _offset}`,
-    description: description,
-    image: `${baseUri}/${_edition}${outputJPEG ? ".jpg" : ".png"}`,
-    ...(hashImages === true && { imageHash: _imageHash }),
+    description: configuration.description,
+    image: `${configuration.baseUri}/${_edition}${configuration.outputJPEG ? ".jpg" : ".png"}`,
+    ...(configuration.hashImages === true && { imageHash: _imageHash }),
     edition: _edition,
     date: dateTime,
-    ...extraMetadata,
     attributes: cleanedAttrs,
     compiler: "Sailboat Labs NFT Generator",
   };
@@ -374,20 +446,20 @@ const loadLayerImg = async (_layer) => {
 };
 
 const drawElement = (_renderObject, mainCanvas) => {
-  const layerCanvas = createCanvas(format.width, format.height);
+  const layerCanvas = createCanvas(configuration.format.width, configuration.format.height);
   const layerctx = layerCanvas.getContext("2d");
-  layerctx.imageSmoothingEnabled = format.smoothing;
+  layerctx.imageSmoothingEnabled = configuration.format.smoothing;
 
   layerctx.drawImage(
     _renderObject.loadedImage,
     0,
     0,
-    format.width,
-    format.height
+    configuration.format.width,
+    configuration.format.height
   );
 
   addAttributes(_renderObject);
-  mainCanvas.drawImage(layerCanvas, 0, 0, format.width, format.height);
+  mainCanvas.drawImage(layerCanvas, 0, 0, configuration.format.width, configuration.format.height);
   return layerCanvas;
 };
 
@@ -471,9 +543,7 @@ const removeQueryStrings = (_dna) => {
   return _dna.replace(query, "");
 };
 
-const isDnaUnique = (_DnaList, _dna = []) => {
-  return !dnaList.has(_dna);
-};
+
 
 // expecting to return an array of strings for each _layer_ that is picked,
 // should be a flattened list of all things that are picked randomly AND reqiured
@@ -576,26 +646,26 @@ function pickRandomElement(
     if (random < 0) {
       // Check for incompatible layer configurations and only add incompatibilities IF
       // chosing _this_ layer.
-      if (incompatible[currentLayers[i].name]) {
+      if (configuration.incompatible[currentLayers[i].name]) {
         debugLogs
           ? console.log(
               `Adding the following to incompatible list`,
-              ...incompatible[currentLayers[i].name]
+              ...configuration.incompatible[currentLayers[i].name]
             )
           : null;
-        incompatibleDNA.push(...incompatible[currentLayers[i].name]);
+        incompatibleDNA.push(...configuration.incompatible[currentLayers[i].name]);
       }
       // Similar to incompaticle, check for forced combos
-      if (forcedCombinations[currentLayers[i].name]) {
+      if (configuration.forcedCombinations[currentLayers[i].name]) {
         debugLogs
           ? console.log(
               chalk.bgYellowBright.black(
                 `\nSetting up the folling forced combinations for ${currentLayers[i].name}: `,
-                ...forcedCombinations[currentLayers[i].name]
+                ...configuration.forcedCombinations[currentLayers[i].name]
               )
             )
           : null;
-        forcedDNA.push(...forcedCombinations[currentLayers[i].name]);
+        forcedDNA.push(...configuration.forcedCombinations[currentLayers[i].name]);
       }
       // if there's a sublayer, we need to concat the sublayers parent ID to the DNA srting
       // and recursively pick nested required and random elements
@@ -614,7 +684,7 @@ function pickRandomElement(
       }
 
       // none/empty layer handler
-      if (currentLayers[i].name === emptyLayerName) {
+      if (currentLayers[i].name === configuration.emptyLayerName) {
         return dnaSequence;
       }
       let dnaString = `${parentId}.${currentLayers[i].id}:${currentLayers[i].zindex}${currentLayers[i].filename}${bypassDNA}`;
@@ -696,7 +766,7 @@ const createDna = (_layers) => {
     dnaSequence = [...dnaSequence, [sortedLayers]];
   });
   const zSortDNA = sortByZ(dnaSequence.flat(2));
-  const dnaStrand = zSortDNA.join(DNA_DELIMITER);
+  let dnaStrand = zSortDNA.join(DNA_DELIMITER);
   return dnaStrand;
 };
 
@@ -744,7 +814,7 @@ function shuffle(array) {
  */
 const paintLayers = (canvasContext, renderObjectArray, layerData) => {
   debugLogs ? console.log("\nClearing canvas") : null;
-  canvasContext.clearRect(0, 0, format.width, format.height);
+  canvasContext.clearRect(0, 0, configuration.format.width, configuration.format.height);
 
   const { abstractedIndexes, _background } = layerData;
 
@@ -758,8 +828,8 @@ const paintLayers = (canvasContext, renderObjectArray, layerData) => {
       drawElement(renderObject, canvasContext),
       0,
       0,
-      format.weight,
-      format.height
+      configuration.format.weight,
+      configuration.format.height
     );
   });
 
@@ -772,24 +842,24 @@ const paintLayers = (canvasContext, renderObjectArray, layerData) => {
     : null;
 };
 
-const postProcessMetadata = (layerData) => {
+const postProcessMetadata = (layerData,address,collection) => {
   const { abstractedIndexes, layerConfigIndex } = layerData;
   // Metadata options
   const savedFile = fs.readFileSync(
-    `${buildDir}/images/${abstractedIndexes[0]}${outputJPEG ? ".jpg" : ".png"}`
+    `${buildDir}/images/${address}/${collection}/${abstractedIndexes[0]}${configuration.outputJPEG ? ".jpg" : ".png"}`
   );
   const _imageHash = hash(savedFile);
 
   // if there's a prefix for the current configIndex, then
   // start count back at 1 for the name, only.
-  const _prefix = layerConfigurations[layerConfigIndex].namePrefix
-    ? layerConfigurations[layerConfigIndex].namePrefix
+  const _prefix = configuration.layerConfigurations[layerConfigIndex].namePrefix
+    ? configuration.layerConfigurations[layerConfigIndex].namePrefix
     : null;
   // if resetNameIndex is turned on, calculate the offset and send it
   // with the prefix
   let _offset = 0;
-  if (layerConfigurations[layerConfigIndex].resetNameIndex) {
-    _offset = layerConfigurations[layerConfigIndex - 1].growEditionSizeTo;
+  if (configuration.layerConfigurations[layerConfigIndex].resetNameIndex) {
+    _offset = configuration.layerConfigurations[layerConfigIndex - 1].growEditionSizeTo;
   }
 
   return {
@@ -799,12 +869,12 @@ const postProcessMetadata = (layerData) => {
   };
 };
 
-const outputFiles = (abstractedIndexes, layerData) => {
+const outputFiles = (abstractedIndexes, layerData, address,collection) => {
   const { newDna, layerConfigIndex } = layerData;
   // Save the canvas buffer to file
-  saveImage(abstractedIndexes[0]);
+  saveImage(abstractedIndexes[0], address,collection);
 
-  const { _imageHash, _prefix, _offset } = postProcessMetadata(layerData);
+  const { _imageHash, _prefix, _offset } = postProcessMetadata(layerData,address,collection);
 
   addMetadata(newDna, abstractedIndexes[0], {
     _prefix,
@@ -820,40 +890,51 @@ const outputFiles = (abstractedIndexes, layerData) => {
   );
 };
 
-export const startCreating = async (storedDNA) => {
-  if (storedDNA) {
-    console.log(`using stored dna of ${storedDNA.size}`);
-    dnaList = storedDNA;
-  }
+type payloadProps = {
+  address:string;
+  collection:string
+}
+
+export const startCreating = async ({address,collection}:payloadProps) => {
+let dnaList: any = new Set();
+
+  // if (storedDNA) {
+  //   console.log(`using stored dna of ${storedDNA.size}`);
+  //   dnaList = storedDNA;
+  // }
   let layerConfigIndex = 0;
   let editionCount = 1; //used for the growEditionSize while loop, not edition number
   let failedCount = 0;
   let abstractedIndexes = [];
   for (
-    let i = startIndex;
+    let i = configuration.startIndex;
     i <=
-    startIndex +
-      layerConfigurations[layerConfigurations.length - 1].growEditionSizeTo;
+    configuration.startIndex +
+    configuration.layerConfigurations[configuration.layerConfigurations.length - 1].growEditionSizeTo;
     i++
   ) {
     abstractedIndexes.push(i);
   }
-  if (shuffleLayerConfigurations) {
+  if (configuration.shuffleLayerConfigurations) {
     abstractedIndexes = shuffle(abstractedIndexes);
   }
   debugLogs
     ? console.log("Editions left to create: ", abstractedIndexes)
     : null;
-  while (layerConfigIndex < layerConfigurations.length) {
-    const layers: any = await layersSetup(
-      layerConfigurations[layerConfigIndex].layersOrder
-    );
+  while (layerConfigIndex < configuration.layerConfigurations.length) {
+    const layers: any = await layersSetup({address,collection});
 
     while (
-      editionCount <= layerConfigurations[layerConfigIndex].growEditionSizeTo
+      editionCount <= configuration.layerConfigurations[layerConfigIndex].growEditionSizeTo
     ) {
       let newDna = createDna(layers);
-      if (isDnaUnique(dnaList, newDna)) {
+      console.log({newDna});
+      
+      // console.log({dnaList});
+
+      const isDnaUnique = !dnaList.has(newDna)
+      
+      if (isDnaUnique) {
         let results = constructLayerToDna(newDna, layers);
         debugLogs ? console.log("DNA:", newDna.split(DNA_DELIMITER)) : null;
         let loadedElements = [];
@@ -870,21 +951,23 @@ export const startCreating = async (storedDNA) => {
             newDna,
             layerConfigIndex,
             abstractedIndexes,
-            _background: background,
+            _background: configuration.background,
           };
           paintLayers(ctxMain, renderObjectArray, layerData);
-          outputFiles(abstractedIndexes, layerData);
+          outputFiles(abstractedIndexes, layerData,address,collection);
         });
 
         dnaList.add(filterDNAOptions(newDna));
         editionCount++;
         abstractedIndexes.shift();
       } else {
-        console.log(chalk.bgRed("DNA exists!"));
+        // console.log(chalk.bgRed("DNA exists!"));
         failedCount++;
-        if (failedCount >= uniqueDnaTorrance) {
+        // console.log(failedCount);
+        
+        if (failedCount >= configuration.uniqueDnaTorrance) {
           console.log(
-            `You need more layers or elements to grow your edition to ${layerConfigurations[layerConfigIndex].growEditionSizeTo} artworks!`
+            `You need more layers or elements to grow your edition to ${configuration.layerConfigurations[layerConfigIndex].growEditionSizeTo} artworks!`
           );
           // eslint-disable-next-line no-process-exit
           process.exit();
@@ -906,7 +989,6 @@ module.exports = {
   DNA_DELIMITER,
   getElements,
   hash,
-  isDnaUnique,
   layersSetup,
   loadLayerImg,
   paintLayers,
