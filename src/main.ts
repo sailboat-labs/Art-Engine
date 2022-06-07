@@ -86,7 +86,7 @@ export const configuration: IConfig = {
   },
   layerConfigurations: [
     {
-      growEditionSizeTo: 16,
+      growEditionSizeTo: 32,
       namePrefix: "Nozo", // Use to add a name to Metadata `name:`
       layersOrder: [
         { name: "Background" },
@@ -277,7 +277,7 @@ const processTraitOverrides = (trait) => {
     : trait;
 };
 
-const layersSetup = async ({ address, collection }: payloadProps) => {
+const layersSetup = async (address, collection, layerOrder) => {
   // const layers = layersOrder.map((layerObj, index) => {
   //   return {
   //     id: index,
@@ -298,271 +298,60 @@ const layersSetup = async ({ address, collection }: payloadProps) => {
 
   //art-engine/francis/nozo/input/layers/
 
-  // const _layers = (
-  //   await admin
-  //     .firestore()
-  //     .collection("art-engine")
-  //     .doc(address)
-  //     .collection(collection)
-  //     .doc("input")
-  //     .collection("layers")
-  //     .get()
-  // ).docs.map((item) => item.data()) as ILayer[];
+  const _layers = (
+    await admin
+      .firestore()
+      .collection("art-engine")
+      .doc(address)
+      .collection(collection)
+      .doc("input")
+      .collection("layers")
+      .get()
+  ).docs.map((item) => item.data()) as ILayer[];
 
-  // const elements = (
-  //   await admin
-  //     .firestore()
-  //     .collection("art-engine")
-  //     .doc(address)
-  //     .collection(collection)
-  //     .doc("input")
-  //     .collection("elements")
-  //     .get()
-  // ).docs.map((item) => item.data()) as IElement[];
+  const elements = (
+    await admin
+      .firestore()
+      .collection("art-engine")
+      .doc(address)
+      .collection(collection)
+      .doc("input")
+      .collection("elements")
+      .get()
+  ).docs.map((item) => item.data()) as IElement[];
 
-  // const layers = _layers.map((layer: ILayer, layerIndex) => {
-  //   return {
-  //     id: layerIndex,
-  //     name: layer.name,
-  //     blendmode: layer.blendmode,
-  //     opacity: layer.opacity,
-  //     elements: elements
-  //       .filter(
-  //         (element) => element.trait.toLowerCase() == layer.name.toLowerCase()
-  //       )
-  //       .map((element, index) => {
-  //         return {
-  //           sublayer: element.sublayer,
-  //           weight: index + 1,
-  //           blendmode: element.blendmode,
-  //           opacity: element.opacity,
-  //           id: index,
-  //           name: element.name,
-  //           filename: `${layer.name}#${padLeft(index + 1)}.png`,
-  //           path: element.path,
-  //           zindex: element.zindex,
-  //           trait: element.trait,
-  //           traitValue: element.traitValue,
-  //         };
-  //       }),
-  //     bypassDNA: layer.bypassDNA,
-  //   };
-  // });
+  const layers = layerOrder.map((layer: ILayer, layerIndex) => {
+    return {
+      id: layerIndex,
+      name: layer.name,
+      blendmode: layer.blendmode,
+      opacity: layer.opacity,
+      elements: elements
+        .filter(
+          (element) => element.trait.toLowerCase() == layer.name.toLowerCase()
+        )
+        .map((element, index) => {
+          return {
+            sublayer: element.sublayer,
+            weight: index + 1,
+            blendmode: element.blendmode,
+            opacity: element.opacity,
+            id: index,
+            name: element.name,
+            filename: `${layer.name}#${padLeft(index + 1)}.png`,
+            path: element.path,
+            zindex: element.zindex,
+            trait: element.trait,
+            traitValue: element.traitValue,
+          };
+        }),
+      bypassDNA: layer.bypassDNA,
+    };
+  });
 
-  const data = [
-    {
-      id: 0,
-      name: "Background",
-      blendmode: "source-over",
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 0,
-          name: "Background",
-          filename: "Background#001.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#001.png",
-          zindex: "",
-          trait: "Background",
-          traitValue: "Background",
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 1,
-          name: "Background",
-          filename: "Background#002.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#002.png",
-          zindex: "",
-          trait: "Background",
-          traitValue: "Background",
-        },
-      ],
-      bypassDNA: false,
-    },
-    {
-      id: 1,
-      name: "Skin",
-      blendmode: "source-over",
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 0,
-          name: "Skin",
-          filename: "Skin#001.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Skin/Skin#001.png",
-          zindex: "",
-          trait: "Skin",
-          traitValue: "Skin",
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 1,
-          name: "Skin",
-          filename: "Skin#002.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Skin/Skin#002.png",
-          zindex: "",
-          trait: "Skin",
-          traitValue: "Skin",
-        },
-      ],
-      bypassDNA: false,
-    },
-    {
-      id: 2,
-      name: "Eyes",
-      blendmode: "source-over",
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 0,
-          name: "Eyes",
-          filename: "Eyes#001.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Eyes/Eyes#001.png",
-          zindex: "",
-          trait: "Eyes",
-          traitValue: "Eyes",
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 1,
-          name: "Eyes",
-          filename: "Eyes#002.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Eyes/Eyes#002.png",
-          zindex: "",
-          trait: "Eyes",
-          traitValue: "Eyes",
-        },
-      ],
-      bypassDNA: false,
-    },
-    {
-      id: 3,
-      name: "Clothes",
-      blendmode: "source-over",
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 0,
-          name: "Clothing",
-          filename: "Clothing#001.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Clothes/Clothing#001.png",
-          zindex: "",
-          trait: "Clothes",
-          traitValue: "Clothing",
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 1,
-          name: "Clothing",
-          filename: "Clothing#002.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Clothes/Clothing#002.png",
-          zindex: "",
-          trait: "Clothes",
-          traitValue: "Clothing",
-        },
-      ],
-      bypassDNA: false,
-    },
-    {
-      id: 4,
-      name: "Head Accessory",
-      blendmode: "source-over",
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 0,
-          name: "Hat",
-          filename: "Hat#001.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Head Accessory/Hat#001.png",
-          zindex: "",
-          trait: "Head Accessory",
-          traitValue: "Hat",
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 1,
-          name: "Hat",
-          filename: "Hat#002.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Head Accessory/Hat#002.png",
-          zindex: "",
-          trait: "Head Accessory",
-          traitValue: "Hat",
-        },
-      ],
-      bypassDNA: false,
-    },
-    {
-      id: 5,
-      name: "Bling",
-      blendmode: "source-over",
-      opacity: 1,
-      elements: [
-        {
-          sublayer: false,
-          weight: 1,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 0,
-          name: "Accessories",
-          filename: "Accessories#001.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Bling/Accessories#001.png",
-          zindex: "",
-          trait: "Bling",
-          traitValue: "Accessories",
-        },
-        {
-          sublayer: false,
-          weight: 2,
-          blendmode: "source-over",
-          opacity: 1,
-          id: 1,
-          name: "Accessories",
-          filename: "Accessories#002.png",
-          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Bling/Accessories#002.png",
-          zindex: "",
-          trait: "Bling",
-          traitValue: "Accessories",
-        },
-      ],
-      bypassDNA: false,
-    },
-  ];
+ 
 
-  return data;
+  return layers;
 };
 
 function padLeft(n) {
@@ -1238,7 +1027,11 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
     ? console.log("Editions left to create: ", abstractedIndexes)
     : null;
   while (layerConfigIndex < configuration.layerConfigurations.length) {
-    const layers: any = await layersSetup({ address, collection });
+    const layers: any = await layersSetup(
+      address,
+      collection,
+      configuration.layerConfigurations[layerConfigIndex].layersOrder
+    );
 
     while (
       editionCount <=
@@ -1248,7 +1041,7 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
       debugLogs && console.log({ newDna });
 
       // console.log({dnaList});
-
+ 
       const isDnaUnique = !dnaList.has(newDna);
 
       if (isDnaUnique) {
