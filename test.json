@@ -1,0 +1,177 @@
+[
+  {
+    "id": 0,
+    "name": "Background",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Background",
+        "filename": "Background#001.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FBackground%2F88386348-d2bd-4e17-895b-f4a96f0fb894.png?alt=media&token=675c7736-52c8-4abb-be81-4f08a5414d44",
+        "zindex": "",
+        "trait": "Background",
+        "traitValue": "Background"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Background",
+        "filename": "Background#002.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FBackground%2Fdb294393-d24a-4272-84e2-463394aa8739.png?alt=media&token=992b5267-8e85-4ca8-b1d8-1d0f1840d592",
+        "zindex": "",
+        "trait": "Background",
+        "traitValue": "Background"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 1,
+    "name": "Bling",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Bling",
+        "filename": "Bling#001.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FBling%2Ff68913a4-a123-4ac5-a200-f88ac7e6f3d8.png?alt=media&token=723d215a-98d8-4e78-b528-cb529684e318",
+        "zindex": "",
+        "trait": "Bling",
+        "traitValue": "Bling"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Bling",
+        "filename": "Bling#002.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FBling%2Ff8566232-7c2f-4fa1-b206-2f68257ccb39.png?alt=media&token=928bff10-fd93-4a1e-9f1a-f1da8a6c81c8",
+        "zindex": "",
+        "trait": "Bling",
+        "traitValue": "Bling"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 2,
+    "name": "Clothes",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Clothes",
+        "filename": "Clothes#001.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FClothes%2F91445254-4ab0-49d5-8976-783038e1153c.png?alt=media&token=20103f6e-4787-4a9b-974b-b363d31fb39d",
+        "zindex": "",
+        "trait": "Clothes",
+        "traitValue": "Clothes"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Clothes",
+        "filename": "Clothes#002.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FClothes%2Ff22276ee-0cbc-4aa8-92f8-06603ca6a3c2.png?alt=media&token=de5587c1-7994-47f7-9e3b-82309bd19752",
+        "zindex": "",
+        "trait": "Clothes",
+        "traitValue": "Clothes"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 3,
+    "name": "Eyes",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Eyes",
+        "filename": "Eyes#001.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FEyes%2F6d85ed7e-a47d-4d28-9587-dd876c348c8e.png?alt=media&token=b23879ce-b05b-4765-8485-2a754dd1a686",
+        "zindex": "",
+        "trait": "Eyes",
+        "traitValue": "Eyes"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Eyes",
+        "filename": "Eyes#002.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FEyes%2Fcab202e8-ef70-42ea-b846-8498d7c24c57.png?alt=media&token=b759345f-dc01-4dd7-9c0a-cba082ce31d0",
+        "zindex": "",
+        "trait": "Eyes",
+        "traitValue": "Eyes"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 4,
+    "name": "Skin",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Skin",
+        "filename": "Skin#001.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FSkin%2F0df84870-00d2-4bdc-ad58-1b58cca8c29c.png?alt=media&token=5d281a3b-e69b-4d3f-88b3-44557c47cc23",
+        "zindex": "",
+        "trait": "Skin",
+        "traitValue": "Skin"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Skin",
+        "filename": "Skin#002.png",
+        "path": "https://firebasestorage.googleapis.com/v0/b/minft-staging.appspot.com/o/art-engine%2Ffrancis%2Fnozo%2Finput%2Flayers%2FSkin%2F90e899b5-25d9-465f-9a8d-73f741477f95.png?alt=media&token=d74c2936-c458-48c4-b0d4-44f93e964357",
+        "zindex": "",
+        "trait": "Skin",
+        "traitValue": "Skin"
+      }
+    ],
+    "bypassDNA": false
+  }
+]

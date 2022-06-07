@@ -1,0 +1,212 @@
+[
+  {
+    "id": 0,
+    "name": "Background",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Background",
+        "filename": "Background#001.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#001.png",
+        "zindex": "",
+        "trait": "Background",
+        "traitValue": "Background"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Background",
+        "filename": "Background#002.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#002.png",
+        "zindex": "",
+        "trait": "Background",
+        "traitValue": "Background"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 1,
+    "name": "Skin",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Skin",
+        "filename": "Skin#001.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Skin/Skin#001.png",
+        "zindex": "",
+        "trait": "Skin",
+        "traitValue": "Skin"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Skin",
+        "filename": "Skin#002.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Skin/Skin#002.png",
+        "zindex": "",
+        "trait": "Skin",
+        "traitValue": "Skin"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 2,
+    "name": "Eyes",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Eyes",
+        "filename": "Eyes#001.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Eyes/Eyes#001.png",
+        "zindex": "",
+        "trait": "Eyes",
+        "traitValue": "Eyes"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Eyes",
+        "filename": "Eyes#002.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Eyes/Eyes#002.png",
+        "zindex": "",
+        "trait": "Eyes",
+        "traitValue": "Eyes"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 3,
+    "name": "Clothes",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Clothing",
+        "filename": "Clothing#001.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Clothes/Clothing#001.png",
+        "zindex": "",
+        "trait": "Clothes",
+        "traitValue": "Clothing"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Clothing",
+        "filename": "Clothing#002.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Clothes/Clothing#002.png",
+        "zindex": "",
+        "trait": "Clothes",
+        "traitValue": "Clothing"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 4,
+    "name": "Head Accessory",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Hat",
+        "filename": "Hat#001.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Head Accessory/Hat#001.png",
+        "zindex": "",
+        "trait": "Head Accessory",
+        "traitValue": "Hat"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Hat",
+        "filename": "Hat#002.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Head Accessory/Hat#002.png",
+        "zindex": "",
+        "trait": "Head Accessory",
+        "traitValue": "Hat"
+      }
+    ],
+    "bypassDNA": false
+  },
+  {
+    "id": 5,
+    "name": "Bling",
+    "blendmode": "source-over",
+    "opacity": 1,
+    "elements": [
+      {
+        "sublayer": false,
+        "weight": 1,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 0,
+        "name": "Accessories",
+        "filename": "Accessories#001.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Bling/Accessories#001.png",
+        "zindex": "",
+        "trait": "Bling",
+        "traitValue": "Accessories"
+      },
+      {
+        "sublayer": false,
+        "weight": 2,
+        "blendmode": "source-over",
+        "opacity": 1,
+        "id": 1,
+        "name": "Accessories",
+        "filename": "Accessories#002.png",
+        "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Bling/Accessories#002.png",
+        "zindex": "",
+        "trait": "Bling",
+        "traitValue": "Accessories"
+      }
+    ],
+    "bypassDNA": false
+  }
+]

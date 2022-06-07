@@ -6,6 +6,7 @@
 // import path from "path";
 // import keccak256 from "keccak256";
 // import chalk from "chalk";
+const uuid = require("uuid-v4");
 
 const fs = require("fs");
 const path = require("path");
@@ -29,7 +30,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import admin from "../config/admin";
-import { IConfig } from "./interfaces";
+import { IConfig, IElement, ILayer } from "./interfaces";
 import { storageRef } from "./config";
 
 const { createCanvas, loadImage } = require(path.join(
@@ -38,8 +39,6 @@ const { createCanvas, loadImage } = require(path.join(
 ));
 
 const firestore = getFirestore(firebaseApp);
-
-console.log(path.join(basePath, "/src/config.ts"));
 
 const buildDir = path.join(basePath, "/build");
 const layersDir = path.join(basePath, "/layers");
@@ -50,7 +49,7 @@ const extraAttributes = () => [
   //
   // {
   // trait_type: "Bottom lid",
-  //   value: ` Bottom lid # ${Math.random() * 100}`,
+  //   value: ` Bottom lid #${Math.random() * 100}`,
   // },
   // {
   //   display_type: "boost_number",
@@ -76,8 +75,8 @@ export const configuration: IConfig = {
   baseUri: "ipfs://NewUriToReplace",
   startIndex: 0,
   format: {
-    width: 1024,
-    height: 1024,
+    width: 512,
+    height: 512,
     smoothing: true,
     weight: 1,
   },
@@ -87,14 +86,14 @@ export const configuration: IConfig = {
   },
   layerConfigurations: [
     {
-      growEditionSizeTo: 4,
-      namePrefix: "NZMX Club", // Use to add a name to Metadata `name:`
+      growEditionSizeTo: 16,
+      namePrefix: "Nozo", // Use to add a name to Metadata `name:`
       layersOrder: [
         { name: "Background" },
         { name: "Skin" },
-        { name: "Eyes" },
         { name: "Clothes" },
-        { name: "Head Accessory" },
+        { name: "Eyes" },
+        // { name: "Head Accessory" },
         { name: "Bling" },
       ],
     },
@@ -125,13 +124,6 @@ export const configuration: IConfig = {
   uniqueDnaTorrance: 10000,
   traitValueOverrides: {},
 };
-
-const canvas = createCanvas(
-  configuration.format.width,
-  configuration.format.height
-);
-const ctxMain = canvas.getContext("2d");
-ctxMain.imageSmoothingEnabled = configuration.format.smoothing;
 
 let metadataList = [];
 let attributesList = [];
@@ -263,82 +255,6 @@ const parseZIndex = (str) => {
   return z ? parseInt(z[0].match(/-?\d+/)[0]) : null;
 };
 
-const getElements = (path, layer) => {
-  return fs
-    .readdirSync(path)
-    .filter((item) => {
-      const invalid = /(\.ini)/g;
-      return !/(^|\/)\.[^\/\.]/g.test(item) && !invalid.test(item);
-    })
-    .map((i, index) => {
-      const name = cleanName(i);
-      const extension = /\.[0-9a-zA-Z]+$/;
-      const sublayer = !extension.test(i);
-      const weight = getRarityWeight(i);
-
-      const { blendmode, opacity } = parseQueryString(i, layer, name);
-      //pass along the zflag to any children
-      const zindex = zflag.exec(i)
-        ? zflag.exec(i)[0]
-        : layer.zindex
-        ? layer.zindex
-        : "";
-
-      const element: any = {
-        sublayer,
-        weight,
-        blendmode,
-        opacity,
-        id: index,
-        name,
-        filename: i,
-        path: `${path}${i}`,
-        zindex,
-      };
-
-      if (sublayer) {
-        element.path = `${path}${i}`;
-        const subPath = `${path}${i}/`;
-        const sublayer = { ...layer, blend: blendmode, opacity, zindex };
-        element.elements = getElements(subPath, sublayer);
-      }
-
-      // Set trait type on layers for metadata
-      const lineage = path.split("/");
-      let typeAncestor;
-
-      if (weight !== "required") {
-        typeAncestor = element.sublayer ? 3 : 2;
-      }
-      if (weight === "required") {
-        typeAncestor = element.sublayer ? 1 : 3;
-      }
-      // we need to check if the parent is required, or if it's a prop-folder
-      if (
-        configuration.useRootTraitType &&
-        lineage[lineage.length - typeAncestor].includes(
-          configuration.rarityDelimiter
-        )
-      ) {
-        typeAncestor += 1;
-      }
-
-      const parentName = cleanName(lineage[lineage.length - typeAncestor]);
-
-      element.trait = layer.sublayerOptions?.[parentName]
-        ? layer.sublayerOptions[parentName].trait
-        : layer.trait !== undefined
-        ? layer.trait
-        : parentName;
-
-      const rawTrait = getTraitValueFromPath(element, lineage);
-      const trait = processTraitOverrides(rawTrait);
-      element.traitValue = trait;
-
-      return element;
-    });
-};
-
 const getTraitValueFromPath = (element, lineage) => {
   // If the element is a required png. then, the trait property = the parent path
   // if the element is a non-required png. black%50.png, then element.name is the value and the parent Dir is the prop
@@ -380,54 +296,318 @@ const layersSetup = async ({ address, collection }: payloadProps) => {
   //   };
   // });
 
-  const layers = (
-    await admin
-      .firestore()
-      .collection("art-engine")
-      .doc(address)
-      .collection(collection)
-      .get()
-  ).docs.map((item) => item.data());
+  //art-engine/francis/nozo/input/layers/
 
-  return layers;
+  // const _layers = (
+  //   await admin
+  //     .firestore()
+  //     .collection("art-engine")
+  //     .doc(address)
+  //     .collection(collection)
+  //     .doc("input")
+  //     .collection("layers")
+  //     .get()
+  // ).docs.map((item) => item.data()) as ILayer[];
+
+  // const elements = (
+  //   await admin
+  //     .firestore()
+  //     .collection("art-engine")
+  //     .doc(address)
+  //     .collection(collection)
+  //     .doc("input")
+  //     .collection("elements")
+  //     .get()
+  // ).docs.map((item) => item.data()) as IElement[];
+
+  // const layers = _layers.map((layer: ILayer, layerIndex) => {
+  //   return {
+  //     id: layerIndex,
+  //     name: layer.name,
+  //     blendmode: layer.blendmode,
+  //     opacity: layer.opacity,
+  //     elements: elements
+  //       .filter(
+  //         (element) => element.trait.toLowerCase() == layer.name.toLowerCase()
+  //       )
+  //       .map((element, index) => {
+  //         return {
+  //           sublayer: element.sublayer,
+  //           weight: index + 1,
+  //           blendmode: element.blendmode,
+  //           opacity: element.opacity,
+  //           id: index,
+  //           name: element.name,
+  //           filename: `${layer.name}#${padLeft(index + 1)}.png`,
+  //           path: element.path,
+  //           zindex: element.zindex,
+  //           trait: element.trait,
+  //           traitValue: element.traitValue,
+  //         };
+  //       }),
+  //     bypassDNA: layer.bypassDNA,
+  //   };
+  // });
+
+  const data = [
+    {
+      id: 0,
+      name: "Background",
+      blendmode: "source-over",
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 0,
+          name: "Background",
+          filename: "Background#001.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#001.png",
+          zindex: "",
+          trait: "Background",
+          traitValue: "Background",
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 1,
+          name: "Background",
+          filename: "Background#002.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#002.png",
+          zindex: "",
+          trait: "Background",
+          traitValue: "Background",
+        },
+      ],
+      bypassDNA: false,
+    },
+    {
+      id: 1,
+      name: "Skin",
+      blendmode: "source-over",
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 0,
+          name: "Skin",
+          filename: "Skin#001.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Skin/Skin#001.png",
+          zindex: "",
+          trait: "Skin",
+          traitValue: "Skin",
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 1,
+          name: "Skin",
+          filename: "Skin#002.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Skin/Skin#002.png",
+          zindex: "",
+          trait: "Skin",
+          traitValue: "Skin",
+        },
+      ],
+      bypassDNA: false,
+    },
+    {
+      id: 2,
+      name: "Eyes",
+      blendmode: "source-over",
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 0,
+          name: "Eyes",
+          filename: "Eyes#001.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Eyes/Eyes#001.png",
+          zindex: "",
+          trait: "Eyes",
+          traitValue: "Eyes",
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 1,
+          name: "Eyes",
+          filename: "Eyes#002.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Eyes/Eyes#002.png",
+          zindex: "",
+          trait: "Eyes",
+          traitValue: "Eyes",
+        },
+      ],
+      bypassDNA: false,
+    },
+    {
+      id: 3,
+      name: "Clothes",
+      blendmode: "source-over",
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 0,
+          name: "Clothing",
+          filename: "Clothing#001.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Clothes/Clothing#001.png",
+          zindex: "",
+          trait: "Clothes",
+          traitValue: "Clothing",
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 1,
+          name: "Clothing",
+          filename: "Clothing#002.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Clothes/Clothing#002.png",
+          zindex: "",
+          trait: "Clothes",
+          traitValue: "Clothing",
+        },
+      ],
+      bypassDNA: false,
+    },
+    {
+      id: 4,
+      name: "Head Accessory",
+      blendmode: "source-over",
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 0,
+          name: "Hat",
+          filename: "Hat#001.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Head Accessory/Hat#001.png",
+          zindex: "",
+          trait: "Head Accessory",
+          traitValue: "Hat",
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 1,
+          name: "Hat",
+          filename: "Hat#002.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Head Accessory/Hat#002.png",
+          zindex: "",
+          trait: "Head Accessory",
+          traitValue: "Hat",
+        },
+      ],
+      bypassDNA: false,
+    },
+    {
+      id: 5,
+      name: "Bling",
+      blendmode: "source-over",
+      opacity: 1,
+      elements: [
+        {
+          sublayer: false,
+          weight: 1,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 0,
+          name: "Accessories",
+          filename: "Accessories#001.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Bling/Accessories#001.png",
+          zindex: "",
+          trait: "Bling",
+          traitValue: "Accessories",
+        },
+        {
+          sublayer: false,
+          weight: 2,
+          blendmode: "source-over",
+          opacity: 1,
+          id: 1,
+          name: "Accessories",
+          filename: "Accessories#002.png",
+          path: "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Bling/Accessories#002.png",
+          zindex: "",
+          trait: "Bling",
+          traitValue: "Accessories",
+        },
+      ],
+      bypassDNA: false,
+    },
+  ];
+
+  return data;
 };
 
-async function uploadFile(path, filename, address, collection) {
-  const storage = await storageRef
-    .upload(path, {
-      public: true,
-      destination: `art-engine/${address}/${collection}/${filename}`,
-      contentType: `image/${configuration.outputJPEG ? "jpg" : "png"}`,
-      metadata: {
-        firebaseStorageDownloadTokens: uuidv4(),
-      },
-    })
-    .then(() => {
-      const file = storageRef.file(
-        `art-engine/${address}/${collection}/${filename}`
-      );
-      return file
-        .getSignedUrl({
-          action: "read",
-          expires: "03-25-2023",
-        })
-        .then(async (signedUrls) => {
-          // signedUrls[0] contains the file's public URL
+function padLeft(n) {
+  return (n < 10 ? "00" : n < 100 ? "0" : "") + n;
+}
 
-          await admin
-            .firestore()
-            .collection("art-engine")
-            .doc(address)
-            .collection("test")
-            .doc("output")
-            .collection("images")
-            .doc(filename?.toString())
-            .set({ filename, url: signedUrls[0],createdOn:new Date().toISOString() });
-        });
+async function uploadFile(path, filename, address, collection, canvas) {
+  const metadata = {
+    metadata: {
+      // This line is very important. It's to create a download token.
+      firebaseStorageDownloadTokens: uuid(),
+    },
+    contentType: "image/png",
+    cacheControl: "public, max-age=31536000",
+  };
+
+  // Uploads a local file to the bucket
+  const image = await storageRef.upload(path, {
+    // Support for HTTP requests made with `Accept-Encoding: gzip`
+    gzip: true,
+    metadata: metadata,
+    public: true,
+    destination: `art-engine/${address}/${collection}/output/${filename}`,
+  });
+
+  const file = storageRef.file(
+    `art-engine/${address}/${collection}/output/${filename}`
+  );
+
+  await admin
+    .firestore()
+    .collection("art-engine")
+    .doc(address)
+    .collection(collection)
+    .doc("output")
+    .collection("images")
+    .doc(filename?.toString())
+    .set({
+      filename,
+      url: file.publicUrl(),
+      createdOn: new Date().toISOString(),
     });
 }
 
-const saveImage = async (_editionCount, address, collection) => {
+const saveImage = async (_editionCount, address, collection, canvas) => {
   fs.writeFileSync(
     `${buildDir}/images/${address}/${collection}/${_editionCount}${
       configuration.outputJPEG ? ".jpg" : ".png"
@@ -435,13 +615,16 @@ const saveImage = async (_editionCount, address, collection) => {
     canvas.toBuffer(`${configuration.outputJPEG ? "image/jpeg" : "image/png"}`)
   );
 
-  uploadFile(
+  // console.log({ dataUrl });
+
+  await uploadFile(
     `${buildDir}/images/${address}/${collection}/${_editionCount}${
       configuration.outputJPEG ? ".jpg" : ".png"
     }`,
     _editionCount,
     address,
-    collection
+    collection,
+    canvas
   );
 
   // await admin
@@ -839,7 +1022,7 @@ function sortZIndex(layers) {
   });
 }
 
-const createDna = (_layers) => {
+const createDna = async (_layers) => {
   let dnaSequence = [];
   let incompatibleDNA = [];
   let forcedDNA = [];
@@ -970,10 +1153,17 @@ const postProcessMetadata = (layerData, address, collection) => {
   };
 };
 
-const outputFiles = (abstractedIndexes, layerData, address, collection) => {
+const outputFiles = async (
+  abstractedIndexes,
+  layerData,
+  address,
+  collection,
+  canvas
+) => {
   const { newDna, layerConfigIndex } = layerData;
   // Save the canvas buffer to file
-  saveImage(abstractedIndexes[0], address, collection);
+  await saveImage(abstractedIndexes[0], address, collection, canvas);
+  console.log("saved image");
 
   const { _imageHash, _prefix, _offset } = postProcessMetadata(
     layerData,
@@ -1002,6 +1192,25 @@ type payloadProps = {
 
 export const startCreating = async ({ address, collection }: payloadProps) => {
   let dnaList: any = new Set();
+
+  const canvas = createCanvas(
+    configuration.format.width,
+    configuration.format.height
+  );
+
+  const ctxMain = canvas.getContext("2d");
+  ctxMain.imageSmoothingEnabled = configuration.format.smoothing;
+
+  await admin
+    .firestore()
+    .collection("art-engine")
+    .doc(address)
+    .collection(collection)
+    .doc("output")
+    .delete()
+    .then((e) => {
+      console.log(e);
+    });
 
   // if (storedDNA) {
   //   console.log(`using stored dna of ${storedDNA.size}`);
@@ -1035,8 +1244,8 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
       editionCount <=
       configuration.layerConfigurations[layerConfigIndex].growEditionSizeTo
     ) {
-      let newDna = createDna(layers);
-      console.log({ newDna });
+      let newDna = await createDna(layers);
+      debugLogs && console.log({ newDna });
 
       // console.log({dnaList});
 
@@ -1054,7 +1263,7 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
           loadedElements.push(loadLayerImg(layer));
         });
 
-        await Promise.all(loadedElements).then((renderObjectArray) => {
+        await Promise.all(loadedElements).then(async (renderObjectArray) => {
           const layerData = {
             newDna,
             layerConfigIndex,
@@ -1062,7 +1271,13 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
             _background: configuration.background,
           };
           paintLayers(ctxMain, renderObjectArray, layerData);
-          outputFiles(abstractedIndexes, layerData, address, collection);
+          await outputFiles(
+            abstractedIndexes,
+            layerData,
+            address,
+            collection,
+            canvas
+          );
         });
 
         dnaList.add(filterDNAOptions(newDna));
@@ -1095,7 +1310,6 @@ module.exports = {
   constructLayerToDna,
   createDna,
   DNA_DELIMITER,
-  getElements,
   hash,
   layersSetup,
   loadLayerImg,
