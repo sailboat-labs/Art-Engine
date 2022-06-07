@@ -86,14 +86,14 @@ export const configuration: IConfig = {
   },
   layerConfigurations: [
     {
-      growEditionSizeTo: 32,
+      growEditionSizeTo: 64,
       namePrefix: "Nozo", // Use to add a name to Metadata `name:`
       layersOrder: [
         { name: "Background" },
         { name: "Skin" },
         { name: "Clothes" },
         { name: "Eyes" },
-        // { name: "Head Accessory" },
+        { name: "Hat" },
         { name: "Bling" },
       ],
     },
@@ -504,25 +504,31 @@ const drawElement = (_renderObject, mainCanvas) => {
     configuration.format.width,
     configuration.format.height
   );
-  const layerctx = layerCanvas.getContext("2d");
-  layerctx.imageSmoothingEnabled = configuration.format.smoothing;
-
-  layerctx.drawImage(
-    _renderObject.loadedImage,
-    0,
-    0,
-    configuration.format.width,
-    configuration.format.height
-  );
-
-  addAttributes(_renderObject);
-  mainCanvas.drawImage(
-    layerCanvas,
-    0,
-    0,
-    configuration.format.width,
-    configuration.format.height
-  );
+  try {
+    
+    const layerctx = layerCanvas.getContext("2d");
+    layerctx.imageSmoothingEnabled = configuration.format.smoothing;
+  
+    layerctx.drawImage(
+      _renderObject.loadedImage,
+      0,
+      0,
+      configuration.format.width,
+      configuration.format.height
+    );
+  
+    addAttributes(_renderObject);
+    mainCanvas.drawImage(
+      layerCanvas,
+      0,
+      0,
+      configuration.format.width,
+      configuration.format.height
+    );
+  } catch (error) {
+    console.log(error);
+    
+  }
   return layerCanvas;
 };
 
@@ -952,7 +958,6 @@ const outputFiles = async (
   const { newDna, layerConfigIndex } = layerData;
   // Save the canvas buffer to file
   await saveImage(abstractedIndexes[0], address, collection, canvas);
-  console.log("saved image");
 
   const { _imageHash, _prefix, _offset } = postProcessMetadata(
     layerData,
@@ -969,7 +974,7 @@ const outputFiles = async (
   saveMetaDataSingleFile(abstractedIndexes[0], address, collection);
   console.log(
     chalk.cyan(
-      `Created edition: ${abstractedIndexes[0]}, with DNA: ${hash(newDna)}`
+      `Created edition: ${abstractedIndexes[0]} ${debugLogs ? `, with DNA: ${hash(newDna)}` : ""}`
     )
   );
 };
@@ -978,6 +983,20 @@ type payloadProps = {
   address: string;
   collection: string;
 };
+
+async function clearCollectionImages(address,collection) {
+  // Get a new write batch
+  var batch = admin.firestore().batch()
+
+ await admin.firestore().collection(`/art-engine/${address}/${collection}/output/images`).listDocuments().then(val => {
+      val.map((val) => {
+          batch.delete(val)
+      })
+      console.log(`Output Images Cleared: /art-engine/${address}/${collection}/output/images`);
+      
+      batch.commit()
+  })
+}
 
 export const startCreating = async ({ address, collection }: payloadProps) => {
   let dnaList: any = new Set();
@@ -990,16 +1009,9 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
   const ctxMain = canvas.getContext("2d");
   ctxMain.imageSmoothingEnabled = configuration.format.smoothing;
 
-  await admin
-    .firestore()
-    .collection("art-engine")
-    .doc(address)
-    .collection(collection)
-    .doc("output")
-    .delete()
-    .then((e) => {
-      console.log(e);
-    });
+  
+
+    await clearCollectionImages(address,collection)
 
   // if (storedDNA) {
   //   console.log(`using stored dna of ${storedDNA.size}`);
