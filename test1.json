@@ -2,37 +2,22 @@
   {
     "id": 0,
     "name": "Background",
-    "blendmode": "source-over",
-    "opacity": 1,
     "elements": [
       {
-        "sublayer": false,
-        "weight": 1,
-        "blendmode": "source-over",
-        "opacity": 1,
-        "id": 0,
+        
         "name": "Background",
         "filename": "Background#001.png",
         "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#001.png",
-        "zindex": "",
-        "trait": "Background",
-        "traitValue": "Background"
+        
       },
       {
-        "sublayer": false,
-        "weight": 2,
-        "blendmode": "source-over",
-        "opacity": 1,
-        "id": 1,
+        
         "name": "Background",
         "filename": "Background#002.png",
         "path": "/Users/franciseshun/Desktop/Dev/SailboatLabs/web3/art-engine/layers/Background/Background#002.png",
-        "zindex": "",
-        "trait": "Background",
-        "traitValue": "Background"
+       
       }
-    ],
-    "bypassDNA": false
+    ]
   },
   {
     "id": 1,

@@ -91,10 +91,10 @@ export const configuration: IConfig = {
       layersOrder: [
         { name: "Background" },
         { name: "Skin" },
-        { name: "Clothes" },
+        { name: "Outfits" },
         { name: "Eyes" },
-        { name: "Hat" },
-        { name: "Bling" },
+        { name: "Mouths" },
+        { name: "Beard" },
       ],
     },
   ],
@@ -296,15 +296,13 @@ const layersSetup = async (address, collection, layerOrder) => {
   //   };
   // });
 
-  //art-engine/francis/nozo/input/layers/
-
   const _layers = (
     await admin
       .firestore()
       .collection("art-engine")
-      .doc(address)
-      .collection(collection)
-      .doc("input")
+      .doc("users")
+      .collection(address)
+      .doc(collection)
       .collection("layers")
       .get()
   ).docs.map((item) => item.data()) as ILayer[];
@@ -313,9 +311,9 @@ const layersSetup = async (address, collection, layerOrder) => {
     await admin
       .firestore()
       .collection("art-engine")
-      .doc(address)
-      .collection(collection)
-      .doc("input")
+      .doc("users")
+      .collection(address)
+      .doc(collection)
       .collection("elements")
       .get()
   ).docs.map((item) => item.data()) as IElement[];
@@ -348,8 +346,6 @@ const layersSetup = async (address, collection, layerOrder) => {
       bypassDNA: layer.bypassDNA,
     };
   });
-
- 
 
   return layers;
 };
@@ -505,10 +501,9 @@ const drawElement = (_renderObject, mainCanvas) => {
     configuration.format.height
   );
   try {
-    
     const layerctx = layerCanvas.getContext("2d");
     layerctx.imageSmoothingEnabled = configuration.format.smoothing;
-  
+
     layerctx.drawImage(
       _renderObject.loadedImage,
       0,
@@ -516,7 +511,7 @@ const drawElement = (_renderObject, mainCanvas) => {
       configuration.format.width,
       configuration.format.height
     );
-  
+
     addAttributes(_renderObject);
     mainCanvas.drawImage(
       layerCanvas,
@@ -527,7 +522,6 @@ const drawElement = (_renderObject, mainCanvas) => {
     );
   } catch (error) {
     console.log(error);
-    
   }
   return layerCanvas;
 };
@@ -974,7 +968,9 @@ const outputFiles = async (
   saveMetaDataSingleFile(abstractedIndexes[0], address, collection);
   console.log(
     chalk.cyan(
-      `Created edition: ${abstractedIndexes[0]} ${debugLogs ? `, with DNA: ${hash(newDna)}` : ""}`
+      `Created edition: ${abstractedIndexes[0]} ${
+        debugLogs ? `, with DNA: ${hash(newDna)}` : ""
+      }`
     )
   );
 };
@@ -984,18 +980,24 @@ type payloadProps = {
   collection: string;
 };
 
-async function clearCollectionImages(address,collection) {
+async function clearCollectionImages(address, collection) {
   // Get a new write batch
-  var batch = admin.firestore().batch()
+  var batch = admin.firestore().batch();
 
- await admin.firestore().collection(`/art-engine/${address}/${collection}/output/images`).listDocuments().then(val => {
+  await admin
+    .firestore()
+    .collection(`/art-engine/${address}/${collection}/output/images`)
+    .listDocuments()
+    .then((val) => {
       val.map((val) => {
-          batch.delete(val)
-      })
-      console.log(`Output Images Cleared: /art-engine/${address}/${collection}/output/images`);
-      
-      batch.commit()
-  })
+        batch.delete(val);
+      });
+      console.log(
+        `Output Images Cleared: /art-engine/${address}/${collection}/output/images`
+      );
+
+      batch.commit();
+    });
 }
 
 export const startCreating = async ({ address, collection }: payloadProps) => {
@@ -1009,9 +1011,7 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
   const ctxMain = canvas.getContext("2d");
   ctxMain.imageSmoothingEnabled = configuration.format.smoothing;
 
-  
-
-    await clearCollectionImages(address,collection)
+  await clearCollectionImages(address, collection);
 
   // if (storedDNA) {
   //   console.log(`using stored dna of ${storedDNA.size}`);
@@ -1053,7 +1053,7 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
       debugLogs && console.log({ newDna });
 
       // console.log({dnaList});
- 
+
       const isDnaUnique = !dnaList.has(newDna);
 
       if (isDnaUnique) {
