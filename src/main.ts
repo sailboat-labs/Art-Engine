@@ -989,9 +989,10 @@ async function clearCollectionImages(address, collection) {
   // Get a new write batch
   var batch = admin.firestore().batch();
 
+
   await admin
     .firestore()
-    .collection(`/art-engine/${address}/${collection}/output/images`)
+    .collection(`/art-engine/users/${address}/${collection}/generated`)
     .listDocuments()
     .then((val) => {
       val.map((val) => {
