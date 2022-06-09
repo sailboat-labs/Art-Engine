@@ -69,7 +69,7 @@ const extraAttributes = () => [
 ];
 
 //settings
-const debugLogs = false;
+const debugLogs = true;
 export const configuration: IConfig = {
   description: "This is the description",
   baseUri: "ipfs://NewUriToReplace",
@@ -278,6 +278,8 @@ const processTraitOverrides = (trait) => {
 };
 
 const layersSetup = async (address, collection, layerOrder) => {
+  console.log("fetching layers");
+  
   // const layers = layersOrder.map((layerObj, index) => {
   //   return {
   //     id: index,
@@ -296,16 +298,16 @@ const layersSetup = async (address, collection, layerOrder) => {
   //   };
   // });
 
-  const _layers = (
-    await admin
-      .firestore()
-      .collection("art-engine")
-      .doc("users")
-      .collection(address)
-      .doc(collection)
-      .collection("layers")
-      .get()
-  ).docs.map((item) => item.data()) as ILayer[];
+  // const _layers = (
+  //   await admin
+  //     .firestore()
+  //     .collection("art-engine")
+  //     .doc("users")
+  //     .collection(address)
+  //     .doc(collection)
+  //     .collection("layers")
+  //     .get()
+  // ).docs.map((item) => item.data()) as ILayer[];
 
   const elements = (
     await admin
