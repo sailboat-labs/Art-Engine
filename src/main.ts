@@ -30,7 +30,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import admin from "../config/admin";
-import { IConfig, IElement, ILayer } from "./interfaces";
+import { IConfig, IElement, ILayer, ILayerConfigurations } from "./interfaces";
 import { storageRef } from "./config";
 
 const { createCanvas, loadImage } = require(path.join(
@@ -279,7 +279,7 @@ const processTraitOverrides = (trait) => {
 
 const layersSetup = async (address, collection, layerOrder) => {
   console.log("fetching layers");
-  
+
   // const layers = layersOrder.map((layerObj, index) => {
   //   return {
   //     id: index,
@@ -379,13 +379,15 @@ async function uploadFile(path, filename, address, collection, canvas) {
     `art-engine/${address}/${collection}/output/${filename}`
   );
 
+  
+
   await admin
-    .firestore()
-    .collection("art-engine")
-    .doc(address)
-    .collection(collection)
-    .doc("output")
-    .collection("images")
+  .firestore()
+  .collection("art-engine")
+  .doc("users")
+  .collection(address)
+  .doc(collection)
+  .collection("generated")
     .doc(filename?.toString())
     .set({
       filename,
@@ -980,6 +982,7 @@ const outputFiles = async (
 type payloadProps = {
   address: string;
   collection: string;
+  layersOrder: { name: string }[];
 };
 
 async function clearCollectionImages(address, collection) {
@@ -1002,7 +1005,11 @@ async function clearCollectionImages(address, collection) {
     });
 }
 
-export const startCreating = async ({ address, collection }: payloadProps) => {
+export const startCreating = async ({
+  address,
+  collection,
+  layersOrder,
+}: payloadProps) => {
   let dnaList: any = new Set();
 
   const canvas = createCanvas(
@@ -1041,11 +1048,7 @@ export const startCreating = async ({ address, collection }: payloadProps) => {
     ? console.log("Editions left to create: ", abstractedIndexes)
     : null;
   while (layerConfigIndex < configuration.layerConfigurations.length) {
-    const layers: any = await layersSetup(
-      address,
-      collection,
-      configuration.layerConfigurations[layerConfigIndex].layersOrder
-    );
+    const layers: any = await layersSetup(address, collection, layersOrder);
 
     while (
       editionCount <=
