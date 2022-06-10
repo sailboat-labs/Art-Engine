@@ -15,8 +15,8 @@
     ]
   },
   "scripts": {
-    "build": "node index.ts",
-    "generate": "ts-node index.ts",
+    "build": "node index.js",
+    "generate": "node index.js",
     "generate:solana": "node index.js && node utils/metaplex.js",
     "generate:cardano": "node index.js && node utils/cardano.js",
     "generate:tezos": "node index.js && node utils/tezos.js",
@@ -27,28 +27,15 @@
     "resize": "node utils/resize.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "Daniel Eugene Botha (HashLips), NFTChef",
   "license": "MIT",
   "dependencies": {
     "canvas": "^2.9.1",
     "chalk": "^4.1.2",
     "commander": "^8.2.0",
-    "cors": "^2.8.5",
     "eslint-plugin-node": "^11.1.0",
-    "express": "^4.18.1",
-    "firebase": "^9.8.2",
-    "firebase-admin": "^10.2.0",
     "gif-encoder-2": "^1.0.5",
     "keccak256": "^1.0.3",
-    "sharp": "^0.30.2",
-    "uuid": "^8.3.2",
-    "uuid-v4": "^0.1.0"
-  },
-  "devDependencies": {
-    "@babel/preset-typescript": "^7.16.5",
-    "@types/express": "^4.17.13",
-    "@types/node": "^16.11.14",
-    "babel-cli": "^6.26.0",
-    "ts-node": "^10.8.0",
-    "typescript": "^4.5.4"
+    "sharp": "^0.30.2"
   }
 }
